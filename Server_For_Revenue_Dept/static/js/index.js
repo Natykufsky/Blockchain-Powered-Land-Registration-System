@@ -13,7 +13,7 @@ async function connectToBlockchain() {
     try {
       // await ethereum.enable();
 
-      alertUser('','alert-info','none');
+      alertUser('', 'alert-info', 'none');
       showTransactionLoading();
 
       await window.ethereum.request({
@@ -31,29 +31,27 @@ async function connectToBlockchain() {
 
       window.employeeId = accounts[0];
 
-      loadingDiv = document.getElementById("loadingDiv");
-      loadingDiv.style.color = "green";
-      loadingDiv.innerHTML = `Connected with : ${accounts[0]}
-                                <br>
-                                Enter Password
-                                `;
+      // Update the new display element
+      const idDisplay = document.getElementById("employeeIdDisplay");
+      if (idDisplay) {
+        idDisplay.innerHTML = `<strong>Connected Account:</strong><br>${accounts[0]}`;
+      }
 
-      
       document.getElementById("connectToBlockchainDiv").style.display = "none";
       document.getElementById("passwordDiv").style.display = "block";
 
       closeTransactionLoading();
-      alertUser('Enter Your Password','alert-success','block');
+      alertUser('Wallet Connected! Please enter your portal password.', 'alert-success', 'block');
 
 
     } catch (error) {
       console.log(error);
       closeTransactionLoading();
-      alertUser(showError(error),'alert-danger','block');
+      alertUser(showError(error), 'alert-danger', 'block');
     }
 
   } else {
-    alertUser('Please Add Metamask extension for your browser !!','alert-danger','block');
+    alertUser('Please Add Metamask extension for your browser !!', 'alert-danger', 'block');
   }
 
 }
@@ -96,7 +94,7 @@ function login() {
       }
       else {
         console.log(msg)
-        alertUser(msg,'alert-danger','block');
+        alertUser(msg, 'alert-danger', 'block');
       }
 
     })
@@ -113,11 +111,13 @@ function login() {
 
 
 
-function showTransactionLoading() {
-
-  loadingDiv = document.getElementById("loadingDiv");
-
-  loadingDiv.style.display = "block";
+function showTransactionLoading(msg) {
+  const loadingDiv = document.getElementById("loadingDiv");
+  const loadingText = document.getElementById("loadingText");
+  if (loadingText) {
+    loadingText.innerHTML = msg || "Processing...";
+  }
+  loadingDiv.style.display = "flex";
 }
 
 function closeTransactionLoading() {
@@ -128,33 +128,41 @@ function closeTransactionLoading() {
 
 // show error reason to user
 function showError(errorOnTransaction) {
+  if (!errorOnTransaction) return "Unknown Error";
 
-
-  errorCode = errorOnTransaction.code;
-
-  if(errorCode==4001){
-    return "Rejected Transaction";
+  // User rejection
+  if (errorOnTransaction.code === 4001) {
+    return "Transaction rejected by user.";
   }
-  else{
-    let start = errorOnTransaction.message.indexOf('{');
-    let end = -1;
-  
-    errorObj = JSON.parse(errorOnTransaction.message.slice(start, end));
-  
-    errorObj = errorObj.value.data.data;
-  
-    txHash = Object.getOwnPropertyNames(errorObj)[0];
-  
-    let reason = errorObj[txHash].reason;
-  
-    return reason;
+
+  // If there's a nested error in message (common with MetaMask/Ganache)
+  if (errorOnTransaction.message && errorOnTransaction.message.includes('{')) {
+    try {
+      const start = errorOnTransaction.message.indexOf('{');
+      const errorObj = JSON.parse(errorOnTransaction.message.slice(start));
+
+      // Try to find reason in nested structure
+      if (errorObj.value && errorObj.value.data && errorObj.value.data.data) {
+        const nestedData = errorObj.value.data.data;
+        const txHash = Object.getOwnPropertyNames(nestedData)[0];
+        if (nestedData[txHash] && nestedData[txHash].reason) {
+          return nestedData[txHash].reason;
+        }
+      }
+
+      if (errorObj.message) return errorObj.message;
+    } catch (e) {
+      console.error("Error parsing complex error message", e);
+    }
   }
+
+  return errorOnTransaction.reason || errorOnTransaction.message || "An error occurred during transaction";
 }
 
 
-function alertUser(msg,msgType,display){
+function alertUser(msg, msgType, display) {
 
-  console.log(msg,display);
+  console.log(msg, display);
   notifyUser = document.getElementById("notifyUser");
 
   notifyUser.classList = [];
@@ -164,6 +172,6 @@ function alertUser(msg,msgType,display){
   notifyUser.style.display = display;
 
 
-  
+
 }
 

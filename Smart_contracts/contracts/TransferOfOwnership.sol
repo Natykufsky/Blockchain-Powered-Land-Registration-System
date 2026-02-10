@@ -181,8 +181,8 @@ contract TransferOwnerShip{
         
         propertiesOnSale.push(sales.length);
 
-        // converting price  from ether to wei format
-        _price = convertToWei(_price);
+        // Price is already in Wei from JavaScript conversion
+        // _price = convertToWei(_price);  // REMOVED: JavaScript sends Wei directly
 
         Sales memory newSale = Sales({
             saleId: sales.length,
@@ -334,7 +334,7 @@ contract TransferOwnerShip{
             requestedUsers[sale.saleId].push(
                 RequestedUser({
                 user: msg.sender,
-                priceOffered: convertToWei(_priceOffered),
+                priceOffered: _priceOffered,  // Already in Wei from JavaScript
                 state: RequestedUserToASaleState.SentPurchaseRequest
             }));
             
@@ -354,7 +354,8 @@ contract TransferOwnerShip{
         uint256 _price
         ) public {
 
-            _price = convertToWei(_price);
+            // Price is already in Wei from JavaScript conversion
+            // _price = convertToWei(_price);  // REMOVED: JavaScript sends Wei directly
 
             // Find the sale object by its ID
             Sales storage sale = sales[_saleId];
@@ -637,7 +638,7 @@ contract TransferOwnerShip{
 
             // Reset Buyer in RequesteUsers of a Sale.
             requestedUsers[sale.saleId][i].state = RequestedUserToASaleState.ReRequestedPurchaseRequest;
-            requestedUsers[sale.saleId][i].priceOffered = convertToWei(_priceOffered);
+            requestedUsers[sale.saleId][i].priceOffered = _priceOffered;  // Already in Wei from JavaScript
                         
             // Emit an event
             emit PurchaseRequestSent(_saleId, msg.sender, _priceOffered);

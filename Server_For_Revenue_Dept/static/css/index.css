@@ -1,97 +1,295 @@
-header {
-    margin: 0px;
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #10b981;
+    --error-color: #ef4444;
 }
 
-header div {
-    background: #000000;
-    padding: 1px;
-    color: #fafafa;
-    height: 72px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-header h1 {
-    text-align: center;
-    font-size: 35px !important;
-    margin-top: 10px;
+body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
 
-#loadingDiv {
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
+.main-container {
     width: 100%;
-    height: 100%;
-    background-color: #e1e1e1e5;
-    z-index: 9999;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Header Styles */
+.hero-section {
     text-align: center;
-    padding-top: 15%;
-    
-}
-#loadingText{
-    font-size: 45px;
-}
-#loading {
-    font-size: 15px;
+    margin-bottom: 3rem;
+    animation: fadeInDown 0.8s ease-out;
 }
 
-
-#notifyUser {
-    width: fit-content;
-    top: 89px;
-    margin: auto;
-    display: none;
-    font-size: 25px;
-    /*! height: fit-content; */
-  }
-
-
-#connectToBlockchainDiv{
-    
-    /*! background: red; */
-    width: fit-content;
-    padding: 10px;
-    margin: auto;
-    margin-top: 150px;
+.logo-container {
+    margin-bottom: 1.5rem;
 }
 
-
-#connectToBlockchainDiv h2{
-
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
 }
 
-#connectToBlockchainDiv button{
-margin: auto;
-display: block;
-padding: 0px 10px;
-font-size: 23px;
-height: 35px;
-margin-top: 10px;
-background: #59fd59;
-border: none;
-box-shadow: 2px 2px 2px gray;
-color: white;
-font-weight: 598
+.highlight {
+    color: var(--primary-color);
 }
 
-
-
-#passwordDiv {
-    width: fit-content;
-    margin: auto;
-    margin-top: 100px;
+.hero-section h1 {
+    font-size: 2.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(to right, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
 
-#passwordDiv button{
-    display: block;
-    margin: 10px auto;
-    font-size: 20px;
-    padding: 2px 10px;
-    font-weight: 501;
-    background: rgb(12, 246, 12);
+/* Auth Card Styles */
+.auth-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.auth-section {
+    text-align: center;
+}
+
+.icon-header {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.auth-section h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.auth-section p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Button & Input Styles */
+.btn-primary-custom {
+    background: var(--primary-color);
     color: white;
     border: none;
-    box-shadow: 2px 2px 2px gray;
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary-custom:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+.btn-primary-custom:active {
+    transform: translateY(0);
+}
+
+.input-group-custom {
+    position: relative;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.input-group-custom input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: white;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.input-group-custom input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.input-focus-border {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.input-group-custom input:focus + .input-focus-border {
+    width: 100%;
+}
+
+.id-display {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-color);
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    word-break: break-all;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+    border: none;
+    animation: shake 0.5s ease-in-out;
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+    border-left: 4px solid var(--error-color);
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-color);
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spinner-custom {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(37, 99, 235, 0.1);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Animations */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Footer */
+.footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+    .hero-section h1 {
+        font-size: 1.75rem;
+    }
 }

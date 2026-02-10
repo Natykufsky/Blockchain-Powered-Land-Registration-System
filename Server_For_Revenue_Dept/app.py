@@ -11,16 +11,20 @@ from utility.mapRevenueDeptToEmployee import mapRevenueDeptIdToEmployee
 
 # Get configuration info
 
-with open("config.json","r") as f:
+basedir = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(basedir, "config.json"),"r") as f:
     config = json.load(f)
 
 
 
 # admin address
-adminAddress = config["Address_Used_To_Deploy_Contract"]
+# adminAddress = config["Address_Used_To_Deploy_Contract"]
+adminAddress = config["Admin_Address"]
 
 # admin password
 adminPassword = config["Admin_Password"]
+
 
 
 # blockchain Network ID
@@ -130,25 +134,19 @@ def get_pdf(propertyId):
 def fetchContractDetails():
     usersContract = json.loads(
             open(
-                    os.getcwd()+
-                    "/../"+"Smart_contracts/build/contracts/"+
-                    "Users.json"
+                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "Users.json")
                     ).read()
         )
     
     landRegistryContract = json.loads(
             open(
-                    os.getcwd()+
-                    "/../"+"Smart_contracts/build/contracts/"+
-                    "LandRegistry.json"
+                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "LandRegistry.json")
                     ).read()
         )
 
     transferOwnerShip = json.loads(
             open(
-                    os.getcwd()+
-                    "/../"+"Smart_contracts/build/contracts/"+
-                    "TransferOwnerShip.json"
+                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "TransferOwnerShip.json")
                     ).read()
         )
 
@@ -230,29 +228,47 @@ def addEmployee():
         }
 
         try:
+            # Check if employee already exists in database
+            existing_emp = employeesTable.find_one({"employeeId": employeeId})
+            if existing_emp:
+                return jsonify({
+                    'status': 0,
+                    "msg": f"Employee with address '{employeeId}' already registered."
+                }), 409
 
             # add to mongo db database
             result = employeesTable.insert_one(emp)
 
+            print(f"Employee {fname} {lname} added to database successfully")
             
             # make transaction to map revenue dept id to employee address
-            res = mapRevenueDeptIdToEmployee(revenueDeptId,employeeId)
-
-            if res:
-                return jsonify({
-                            'status':1,
-                            "msg":f"Employee '{fname}' Added Successfully"
-                            })
-            else:
+            try:
+                res = mapRevenueDeptIdToEmployee(revenueDeptId, employeeId)
+                
+                if res:
+                    return jsonify({
+                                'status':1,
+                                "msg":f"Employee '{fname}' Added Successfully"
+                                })
+                else:
+                    return jsonify({
+                                'status':0,
+                                "msg":f"Employee added to database but blockchain transaction failed"
+                                })
+            except Exception as blockchain_error:
+                print(f"Blockchain transaction error: {str(blockchain_error)}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({
                             'status':0,
-                            "msg":f"Transaction Failed"
-                            })
+                            "msg": f"Employee added to database but blockchain error: {str(blockchain_error)}"
+                         })
 
         except Exception as e:
+            print(f"Database insertion error: {str(e)}")
             return jsonify({
                             'status':0,
-                            "msg": str(e)
+                            "msg": f"Database error: {str(e)}"
                          })
 
     else:
@@ -283,10 +299,20 @@ if __name__ == '__main__':
             adminId = employeesTable.insert_one(admin).inserted_id
 
             if adminId is not None:
-                print("Added Successfully")
+                print("Added Successfully", admin)
             else:
                 print("Failed to add Details")
                 exit(0)
+        else:
+            # Update password to match config (in case it changed or DB is stale)
+            print("\nUpdating Admin Details in Database to match Config")
+            employeesTable.update_one(
+                {'adminAddress': adminAddress},
+                {'$set': {
+                    'adminAddress': adminAddress,
+                    'password': generate_password_hash(adminPassword)
+                }}
+            )
        
         # Start Server
         app.run(debug=True,port=5001)

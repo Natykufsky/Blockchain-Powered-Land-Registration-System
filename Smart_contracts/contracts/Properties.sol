@@ -38,10 +38,19 @@ contract Property {
     // property Id ==> property
     mapping(uint256 => Land) public lands;
 
+    // uniqueness check: keccak256(locationId, revenueDepartmentId, surveyNumber) => bool
+    mapping(bytes32 => bool) public landExists;
+
     // used to generate property id
     uint256 private landCount;
     
-    
+    function generateLandHash(
+        uint256 _locationId,
+        uint256 _revenueDepartmentId,
+        uint256 _surveyNumber
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_locationId, _revenueDepartmentId, _surveyNumber));
+    }
     
     function addLand(
         uint256 _locationId,
@@ -50,6 +59,9 @@ contract Property {
         address _owner,
         uint256 _area
     ) public returns (uint256) {
+        bytes32 landHash = generateLandHash(_locationId, _revenueDepartmentId, _surveyNumber);
+        require(landExists[landHash] == false, "Land already registered with these details");
+
         landCount++;
 
         lands[landCount] = Land({
@@ -66,6 +78,9 @@ contract Property {
             rejectedReason: "",
             state: StateOfProperty.Created
         });
+
+        landExists[landHash] = true;
+
         // return propertyId
         return landCount;
     }

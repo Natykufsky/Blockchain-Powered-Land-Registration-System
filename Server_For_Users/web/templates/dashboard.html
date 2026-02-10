@@ -6,121 +6,154 @@ Dashboard
 
 {% block content %}
 
-
-
-<link rel="stylesheet" href="css/dashboard.css">
-<link rel="stylesheet" href="css/formAlignment.css">
-
 <script src="js/dashborad.js"></script>
-
-
 <script type="text/javascript">
     checkConnection()
 </script>
 
-<div style="min-height: 76vh;">
+<div class="min-h-[76vh]">
+    <!-- Properties Table Container -->
+    <div id="propertiesTable" class="mb-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-4">
+                Your Properties
+                <button onclick="refreshProperties()"
+                    class="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all text-secondary hover:text-white"
+                    title="Refresh Properties">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </h2>
+        </div>
 
-    <div class="alert " role="alert" id="notifyUser">
+        <div class="glass rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/5 border-b border-white/10">
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">S.No
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Property
+                                Id</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Location
+                                Id</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Revenue
+                                Dept Id</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Survey
+                                Number</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Area
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Docs
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">State
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertiesTableBody" class="divide-y divide-white/5">
+                        <!-- Content populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <div id="propertiesTable" style="display:block;margin:35px;">
+    <!-- Add Property Form -->
+    <div id="addProperty" class="hidden max-w-2xl mx-auto">
+        <div class="glass rounded-3xl p-8 md:p-12 shadow-2xl border border-white/10">
+            <h3 class="text-3xl font-bold text-center mb-10 text-white">Add Your Property</h3>
 
-        <table>
-            <caption> Your Properties </caption>
-            <thead>
-                <th> S.No </th>
-                <th> Property Id </th>
-                <th> Location Id</th>
-                <th> Revenue Department Id</th>
-                <th> Survey Number</th>
-                <th> Area </th>
-                <th style="width: 110px;"> Docs </th>
-                <th> State </th>
-                <th style="width: 100px;"> Sold </th>
-            </thead>
-            <tbody id="propertiesTableBody"></tbody>
-        </table>
-    </div>
+            <form id="addPropertyForm" class="space-y-6" method="post" onsubmit="addProperty(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="revenueDeptId" class="block text-sm font-medium text-secondary ml-1">Revenue Dept
+                            Id</label>
+                        <input id="revenueDeptId" type="number" placeholder="Enter ID" required
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    </div>
 
-    <div id="addProperty" style="display:none;">
+                    <div class="space-y-2">
+                        <label for="location" class="block text-sm font-medium text-secondary ml-1">Location Id</label>
+                        <input id="location" type="text" placeholder="Enter Location" required
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    </div>
 
-        <h3> Add Your Property </h3>
+                    <div class="space-y-2">
+                        <label for="suveyNumber" class="block text-sm font-medium text-secondary ml-1">Survey
+                            Number</label>
+                        <input id="suveyNumber" type="text" placeholder="Survey #" required
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    </div>
 
-        <form class="pure-form pure-form-aligned" method="post" onsubmit="addProperty(event)">
-            <fieldset>
-
-                <div class="pure-control-group">
-                    <label for="revenueDeptId">Revenue Dept Id </label>
-                    <label class="colonInForm"> :</label>
-                    <input id="revenueDeptId" type="number" placeholder="Revenue Dept Id" required>
-
+                    <div class="space-y-2">
+                        <label for="area" class="block text-sm font-medium text-secondary ml-1">Area (sq ft)</label>
+                        <input id="area" type="number" placeholder="Enter Area" required
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    </div>
                 </div>
 
-                <div class="pure-control-group">
-                    <label for="location"> Location</label>
-                    <label class="colonInForm"> :</label>
-                    <input id="location" type="number" placeholder="Location Id" required>
-
+                <div class="space-y-2 pt-2">
+                    <label for="registrationDoc" class="block text-sm font-medium text-secondary ml-1 text-white">Upload
+                        Documents</label>
+                    <div class="relative group">
+                        <input type="file" id="registrationDoc" required
+                            class="w-full bg-white/5 border border-dashed border-white/20 rounded-xl px-4 py-8 text-sm text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover cursor-pointer transition-all">
+                    </div>
                 </div>
 
-
-
-                <div class="pure-control-group">
-                    <label for="suveyNumber"> Survey Number </label>
-                    <label class="colonInForm"> :</label>
-                    <input id="suveyNumber" type="number" placeholder="Survey Number" required>
-
-                </div>
-
-                <div class="pure-control-group">
-                    <label for="area"> Area </label>
-                    <label class="colonInForm"> :</label>
-                    <input id="area" type="number" placeholder="Area" required>
-
-                </div>
-
-                <div class="pure-control-group">
-                    <label for="registrationDoc"> Documents </label>
-                    <label class="colonInForm"> :</label>
-                    <input type="file" id="registrationDoc" required>
-
-                </div>
-
-                <div class="pure-controls" style="margin: 26px 0px 0px 110px;">
-                    <label for="cb" class="pure-checkbox">
-                        <input id="cb" type="checkbox" required> I've read the terms and conditions
+                <div class="flex flex-col items-center gap-6 pt-6">
+                    <label class="inline-flex items-center cursor-pointer group">
+                        <input id="cb" type="checkbox" required
+                            class="w-5 h-5 rounded border-white/10 bg-white/5 text-primary focus:ring-primary/50 transition-all">
+                        <span class="ml-3 text-sm text-secondary group-hover:text-white transition-colors">I've read and
+                            agree to the terms and conditions</span>
                     </label>
 
-                    <button style="margin-left: 80px;box-shadow: 2px 2px 2px 0px rgba(128, 128, 128, 1);" type="submit"
-                        class="pure-button pure-button-primary"> Add </button>
+                    <button type="submit" class="w-full md:w-auto btn-primary !px-12 py-4 shadow-xl">
+                        Submit Property for Registration
+                    </button>
                 </div>
-            </fieldset>
-        </form>
-
-
-
-
-
+            </form>
+        </div>
     </div>
 
-
-    <div class="pdf-popup">
-        <iframe id="pdf-frame" src="" frameborder="0"></iframe>
-        <div class="close-btn" onclick="closePopup()">X</div>
+    <!-- PDF Popup -->
+    <div
+        class="pdf-popup fixed inset-0 z-[10001] bg-dark-900/90 backdrop-blur-md hidden flex-col items-center justify-center p-4">
+        <div
+            class="relative w-full max-w-5xl h-[85vh] bg-dark-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <iframe id="pdf-frame" src="" class="w-full h-full border-none"></iframe>
+            <button
+                class="absolute top-4 right-4 bg-white/10 hover:bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg"
+                onclick="closePopup()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
     </div>
 
+    <!-- Price Prompt -->
+    <div id="prompt-container-backcover"
+        class="fixed inset-0 z-[10002] bg-dark-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div id="prompt-container"
+            class="glass rounded-3xl p-10 max-w-md w-full shadow-2xl border border-white/20 text-center">
+            <label for="prompt-input" class="block text-xl font-bold mb-6 text-white">Set Listing Price [Ether]</label>
+            <input type="number" id="prompt-input" step="0.001" placeholder="0.05"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-2xl text-center text-white focus:outline-none focus:ring-2 focus:ring-primary mb-8 transition-all">
 
-    <div id="prompt-container-backcover">
-    <div id="prompt-container">
-        <label for="prompt-input">Enter Price [in Ether]:</label>
-        <input type="number" id="prompt-input">
-        <br><br>
-        <button id="prompt-ok">OK</button>
-        <button id="prompt-cancel">Cancel</button>
+            <div class="flex gap-4">
+                <button id="prompt-cancel"
+                    class="flex-1 px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 transition-all">Cancel</button>
+                <button id="prompt-ok" class="flex-1 btn-primary py-3">Register Sale</button>
+            </div>
+        </div>
     </div>
-    </div>
-
 </div>
-
 
 {% endblock %}

@@ -6,56 +6,73 @@ Requested Sales
 
 {% block content %}
 
-
-<link rel="stylesheet" href="css/myRequestedSales.css">
-
 <script src="js/myRequestedSales.js"></script>
-
 <script type="text/javascript">
     checkConnection()
 </script>
 
-<div style="min-height: 78vh;">
-      
+<div class="min-h-[78vh]">
+    <div id="salesTable">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-4">
+                Properties You Requested to Buy
+                <button onclick="refreshRequestedSales()"
+                    class="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all text-secondary hover:text-white"
+                    title="Refresh Requests">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </h2>
+        </div>
 
-    <div class="alert " role="alert" id="notifyUser">
-    </div>
-
-    
-  
-
-    <div id="salesTable" style="display:block;">
-        
-        <table>
-            <caption>Properties Requested To buy </caption>
-            <thead>
-                <th> S.No </th>
-                <th> Sale Id </th>
-                <th> Property Id </th>
-                <th> Price Set[in Ether]</th>
-                <th> Price We Offered</th>
-                <th> State </th>
-                <th> Options </th>
-            </thead>
-            <tbody id="salesTableBody"></tbody>
-        </table>
-    </div>
-
-    <div id="prompt-container-backcover">
-        <div id="prompt-container">
-            <label for="prompt-input">Enter Offered Price [in Ether]:</label>
-            <input type="number" id="prompt-input">
-            <br><br>
-            <button id="prompt-ok">OK</button>
-            <button id="prompt-cancel">Cancel</button>
+        <div class="glass rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/5 border-b border-white/10">
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">S.No
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Sale Id
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Property
+                                Id</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Price
+                                Set (ETH)</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Offered
+                                Price (ETH)</th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">State
+                            </th>
+                            <th class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-secondary">Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody" class="divide-y divide-white/5">
+                        <!-- Content populated by JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-
+    <!-- Modal for Offered Price -->
+    <div id="prompt-container-backcover"
+        class="fixed inset-0 z-[10002] bg-dark-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div id="prompt-container"
+            class="glass rounded-3xl p-10 max-w-md w-full shadow-2xl border border-white/20 text-center">
+            <label for="prompt-input" class="block text-xl font-bold mb-4 text-white">Enter New Offered Price
+                [Ether]</label>
+            <input type="number" id="prompt-input" step="0.001"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:ring-2 focus:ring-primary mb-6">
+            <div class="flex gap-4">
+                <button id="prompt-cancel"
+                    class="flex-1 px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 transition-all">Cancel</button>
+                <button id="prompt-ok" class="flex-1 btn-primary py-3">Confirm Update</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-
 {% endblock %}
-
-
-    

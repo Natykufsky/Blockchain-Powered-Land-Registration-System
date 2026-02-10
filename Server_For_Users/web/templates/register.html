@@ -1,90 +1,75 @@
 {% extends 'base.html' %}
 
-{% block title %}
-Dashboard
-{% endblock %}
+{% block title %}Citizen Registration{% endblock %}
 
 {% block content %}
-
-
-<link rel="stylesheet" href="css/register.css">
-<link rel="stylesheet" href="css/formAlignment.css">
-
 <script src="js/register.js"></script>
-
-
 <script type="text/javascript">
     checkConnection()
 </script>
 
-<div style="min-height: 83vh;">
+<div class="flex-1 flex justify-center items-start py-12 px-4 w-full">
+    <div
+        class="glass p-10 rounded-3xl w-full max-w-[600px] text-center shadow-2xl border border-white/10 animate-fade-in-up">
+        <div
+            class="bg-gradient-to-br from-primary to-secondary w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white shadow-lg shadow-primary/30">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-person-plus"
+                viewBox="0 0 16 16">
+                <path
+                    d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                <path fill-rule="evenodd"
+                    d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+            </svg>
+        </div>
 
-    <div class="alert " role="alert" id="notifyUser">
-    </div>
+        <h2 class="text-3xl font-bold mb-3 text-white">Citizen Registration</h2>
+        <p class="text-slate-400 mb-10 leading-relaxed">Complete your profile to access land management tools across the
+            BLOCKCHAIN-POWERED LAND OWNERSHIP MANAGEMENT SYSTEM network.</p>
 
-
-    
-
-    <div id="registerationFormDiv">
-
-        <h3>  Register </h3>
-        <div style="border-top: 1px solid;margin-bottom: 13px;"></div>
-        <form class="pure-form pure-form-aligned" method="post" onsubmit="registerUser(event)">
-            <fieldset>
-
-                <div class="pure-control-group">
-                    <label for="firstName"> First Name </label>
-                    <label class="colonInForm"> :</label>
-                    <input type="text" id="firstName" placeholder="First name" required>
-
+        <form class="space-y-8" method="post" onsubmit="registerUser(event)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div class="space-y-2">
+                    <label for="firstName" class="text-sm font-semibold text-slate-300 ml-1">First Name</label>
+                    <input type="text" id="firstName" placeholder="e.g. John" required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
 
-                <div class="pure-control-group">
-                    <label for="lastName"> Last Name </label>
-                    <label class="colonInForm"> :</label>
-                    <input type="text" id="lastName" placeholder="Last name" required>
+                <div class="space-y-2">
+                    <label for="lastName" class="text-sm font-semibold text-slate-300 ml-1">Last Name</label>
+                    <input type="text" id="lastName" placeholder="e.g. Doe" required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
 
-
-
-                <div class="pure-control-group">
-                    <label for="dob"> Date Of Birth </label>
-                    <label class="colonInForm"> :</label>
-                    <input type="date" id="dob" required>
+                <div class="space-y-2 md:col-span-2">
+                    <label for="dob" class="text-sm font-semibold text-slate-300 ml-1">Date of Birth</label>
+                    <input type="date" id="dob" required style="color-scheme: dark;"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
 
-                <div class="pure-control-group">
-                    <label for="aadharNo"> Aadhar Number </label>
-                    <label class="colonInForm"> :</label>
-                    <input type="text" id="aadharNo" placeholder="Aadhar number" required>
+                <div class="space-y-2 md:col-span-2">
+                    <label for="ninNo" class="text-sm font-semibold text-slate-300 ml-1">NIN Number</label>
+                    <input type="text" id="ninNo" placeholder="National Identification Number" required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
                 </div>
+            </div>
 
+            <div class="flex flex-col gap-6 pt-4">
+                <label class="flex items-center justify-center gap-3 cursor-pointer group">
+                    <input id="cb" type="checkbox" required
+                        class="w-5 h-5 rounded border-white/10 bg-white/5 text-primary focus:ring-primary transition-all cursor-pointer">
+                    <span class="text-slate-400 group-hover:text-slate-300 transition-colors">I agree to the <a href="#"
+                            class="text-primary hover:text-primary-hover font-semibold underline underline-offset-4">Terms
+                            & Conditions</a></span>
+                </label>
 
-
-                <div class="pure-controls" style="margin: 26px 0px 0px 76px;">
-                    <label for="cb" class="pure-checkbox">
-                        <input id="cb" type="checkbox" required> I've read the terms and conditions
-                    </label>
-
-                    <a 
-                        class="pure-button pure-button-primary" id="backButton"
-                        href="/"
-                        > Back </a>
-
-                    <button type="submit"
-                        class="pure-button pure-button-primary" id="registerButton"> Register </button>
+                <div class="flex gap-4">
+                    <a href="/"
+                        class="flex-1 px-6 py-4 rounded-xl font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all text-center">Back</a>
+                    <button type="submit" id="registerButton" class="flex-[2] btn-primary py-4">Register
+                        Profile</button>
                 </div>
-            </fieldset>
+            </div>
         </form>
-
-
-
-
-
     </div>
-
 </div>
-
-
-
 {% endblock %}

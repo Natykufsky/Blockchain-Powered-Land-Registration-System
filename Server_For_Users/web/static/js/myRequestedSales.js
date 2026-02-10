@@ -2,52 +2,44 @@
 
 
 
-async function checkConnection()
-{
-    
-  // checking Meta-Mask extension is added or not
-  if (window.ethereum){
+async function checkConnection() {
+  if (window.ethereum) {
+    try {
+      window.web3 = new Web3(ethereum);
 
-    try{
-    //   await ethereum.enable();
+      const networkId = await web3.eth.net.getId();
+      console.log("Network ID:", networkId);
 
-      window.web3  = new Web3(ethereum);
+      if (networkId != 5777) {
+        alertUser("Please connect to Ganache Network (ID: 5777) in MetaMask.", "alert-warning", "block");
+        return;
+      }
 
       const accounts = await web3.eth.getAccounts();
-
       const accountConnectedToMetaMask = accounts[0];
 
       console.log("Account Connected to MetaMask:", accountConnectedToMetaMask);
-      console.log("Account used to login        :",window.localStorage["userAddress"])
-      console.log(accountConnectedToMetaMask != window.localStorage["userAddress"]);
+      console.log("Account used to login        :", window.localStorage["userAddress"]);
 
-      if( accountConnectedToMetaMask != window.localStorage["userAddress"])
-      {
-        alert("Mismatch in account used to login and connected to metamask.. Please login again");
-
-        window.location.href = "/";
-      }
-      else
-      {
+      if (accountConnectedToMetaMask != window.localStorage["userAddress"]) {
+        alertUser("Mismatch in account used to login and connected to MetaMask. Please login again.", "alert-danger", "block");
+        setTimeout(() => { window.location.href = "/"; }, 3000);
+      } else {
         console.log("No Account changes detected !!");
-
         fetchUserDetails();
-
         fetchMyRequestedSales();
-
       }
-
-    }catch(error){
-
-      
-      showError(error);
-
+    } catch (error) {
+      console.error("Connection error:", error);
+      if (error.code === 4001) {
+        alertUser("Connection rejected by user. Please try again.", "alert-danger", "block");
+      } else {
+        alertUser(showError(error), "alert-danger", "block");
+      }
     }
-
-  }else{
-    alert("Please Add Metamask extension for your browser !!");
+  } else {
+    alertUser("Please Add Metamask extension for your browser !!", "alert-warning", "block");
   }
-
 }
 
 
@@ -79,89 +71,86 @@ async function fetchUserDetails() {
 
     // document.getElementById("dob").innerText = userDetails["dateOfBirth"];
 
-    // document.getElementById("aadharNumber").innerText = userDetails["aadharNumber"];
+    // document.getElementById("ninNumber").innerText = userDetails["ninNumber"];
   }
   else {
-    alert("Account Not Found !! Please Login again")
+    alertUser("Account Not Found !! Please Login again", "alert-danger", "block");
   }
 
 }
 
 
 
-async function getStatusOfPurchseRequest(saleId){
+async function getStatusOfPurchseRequest(saleId) {
 
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  try{
+  try {
 
     requestedUsersForASale = await contract.methods.getRequestedUsers(
-                                                saleId
-                                                ).call()
-                                                .then(function(value){
-                                                  return value;
-                                                });
-  
+      saleId
+    ).call()
+      .then(function (value) {
+        return value;
+      });
 
-    for(let i=0;i<requestedUsersForASale.length;i++)
-    {
+
+    for (let i = 0; i < requestedUsersForASale.length; i++) {
 
       buyer = requestedUsersForASale[i]["user"];
 
-      if (buyer == accountUsedToLogin){
+      if (buyer == accountUsedToLogin) {
         // covert price to ethers
         price = web3.utils.fromWei(requestedUsersForASale[i]["priceOffered"]);
         state = requestedUsersForASale[i]["state"];
 
         return {
-          buyerAddress : buyer,
-          priceOffered : price,
-          state : state
+          buyerAddress: buyer,
+          priceOffered: price,
+          state: state
         };
       }
 
     }
-  
-  }
-  catch(error)
-  {
-    console.log(error);
-    showError(error);
-  }
 
+  }
+  catch (error) {
+    console.error("Error in getStatusOfPurchseRequest:", error);
+    alertUser(showError(error), "alert-danger", "block");
+  }
 }
 
 
 
-async function fetchMyRequestedSales(){
+async function fetchMyRequestedSales() {
 
-    
+
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  try{
+  try {
 
     myRequestedSales = await contract.methods.getRequestedSales(
-                                                accountUsedToLogin
-                                                ).call()
-                                                .then(function(value){
-                                                  return value;
-                                                });
-    
+      accountUsedToLogin
+    ).call()
+      .then(function (value) {
+        return value;
+      });
+
     console.log(myRequestedSales);
 
-    
+
     let tableBody = document.getElementById("salesTableBody");
 
     let tableBodyCode = "";
@@ -169,33 +158,30 @@ async function fetchMyRequestedSales(){
 
     let saleId = "";
 
-    for(let i=0;i<myRequestedSales.length;i++)
-    {
-      
+    for (let i = 0; i < myRequestedSales.length; i++) {
+
       saleId = myRequestedSales[i]["saleId"];
 
       statusOfPurchseRequestSent = await getStatusOfPurchseRequest(saleId);
 
-      tableRow = "<tr>";
+      // Debug logging to verify conversions
+      console.log(`Sale ${saleId}:`);
+      console.log(`  - Price from blockchain (Wei): ${myRequestedSales[i]["price"]}`);
+      console.log(`  - Price converted (Ether): ${web3.utils.fromWei(myRequestedSales[i]["price"])}`);
+      console.log(`  - Offered price (Ether): ${statusOfPurchseRequestSent.priceOffered}`);
+
+      tableRow = "<tr class='hover:bg-white/5 transition-colors border-b border-white/5'>";
+
+      tableRow += `<td class='px-6 py-4 text-sm'>${i + 1}</td>`;
+      tableRow += `<td class='px-6 py-4 text-sm font-mono text-slate-400'>${saleId}</td>`;
+      tableRow += `<td class='px-6 py-4 text-sm font-mono text-slate-400'>${myRequestedSales[i]["propertyId"]}</td>`;
+      tableRow += `<td class='px-6 py-4 text-sm font-bold text-slate-300'>${web3.utils.fromWei(myRequestedSales[i]["price"])} ETH</td>`;
+      tableRow += `<td class='px-6 py-4 text-sm font-bold text-emerald-400'>${statusOfPurchseRequestSent.priceOffered} ETH</td>`;
 
 
-      tableRow += `<td></td>`;
-      tableRow += "<td>"+ saleId + "</td>";
-      tableRow += "<td>"+myRequestedSales[i]["propertyId"]+ "</td>";
-      tableRow += "<td>"+  web3.utils.fromWei(myRequestedSales[i]["price"])+ "</td>";
-      tableRow += "<td>"+  statusOfPurchseRequestSent.priceOffered + "</td>";
-     
-    
-      tableRow += "<td>"+ handleStateOfPurchaseRequestSent( statusOfPurchseRequestSent.state )+ "</td>";
+      tableRow += "<td class='px-6 py-4 text-sm'>" + handleStateOfPurchaseRequestSent(statusOfPurchseRequestSent.state) + "</td>";
+      tableRow += "<td class='px-6 py-4 text-sm flex gap-2'>" + addOptionsBasedOnState(statusOfPurchseRequestSent, myRequestedSales[i]) + "</td>";
 
-
-      // add options 
-      tableRow += `<td ${addOptionsBasedOnState(
-                            statusOfPurchseRequestSent,
-                            myRequestedSales[i]
-                          )} 
-                   </td>`;
-                        
       tableRow += "</tr>";
 
       tableBodyCode += tableRow;
@@ -203,18 +189,17 @@ async function fetchMyRequestedSales(){
 
     tableBody.innerHTML = tableBodyCode;
 
-   
+
   }
-  catch(error)
-  {
-    console.log(error);
-    showError(error);
+  catch (error) {
+    console.error("Error in fetchMyRequestedSales:", error);
+    alertUser(showError(error), "alert-danger", "block");
   }
 }
 
 
 
-function addOptionsBasedOnState(statusOfPurchseRequestSent,sale){
+function addOptionsBasedOnState(statusOfPurchseRequestSent, sale) {
 
   res = null;
 
@@ -223,270 +208,237 @@ function addOptionsBasedOnState(statusOfPurchseRequestSent,sale){
   saleId = sale["saleId"];
   saleState = sale["state"];
 
-  priceOffered = statusOfPurchseRequestSent.priceOffered
+  priceOffered = statusOfPurchseRequestSent.priceOffered;
 
-  if (saleState == 2){
-    res  = `class="saleTerminated"> Sale Terminated`;
+  if (saleState == 2) {
+    res = `<span class='text-red-400 text-xs font-bold uppercase'>Sale Terminated</span>`;
   }
-  else if (saleState == 3)
-  {
-    res = `class="saleClosed"> Sale Closed`;
+  else if (saleState == 3) {
+    res = `<span class='text-slate-500 text-xs font-bold uppercase'>Sale Closed</span>`;
   }
-  else if(state == 0 || state == 6){
-    res = `><button class="cancelPurchaseRequestSentToSellerButton" onclick="cancelPurchaseRequestSentToSeller(${saleId})"> Cancel Request </button>`;
+  else if (state == 0 || state == 6) {
+    res = `<button class="bg-red-500/10 hover:bg-red-500/20 text-red-500 px-3 py-1 rounded-lg border border-red-500/20 transition-all text-xs font-semibold" onclick="cancelPurchaseRequestSentToSeller(${saleId})"> Cancel Request </button>`;
   }
-  else if(state == 1 || state == 3 || state == 4 || state == 5){
-    if(saleState == 0) // sale is active
-    {
-      res = `><button class="rerequestPurchaseRequestButton" onclick="rerequestPurchaseRequest(${saleId})"> Re-Request </button>`;
+  else if (state == 1 || state == 3 || state == 4 || state == 5) {
+    if (saleState == 0) {
+      res = `<button class="bg-primary/20 hover:bg-primary/30 text-primary px-3 py-1 rounded-lg border border-primary/20 transition-all text-xs font-semibold" onclick="rerequestPurchaseRequest(${saleId})"> Re-Request </button>`;
     }
-    else{
-      res = `class="saleIsNotActive"> Currently Sale is Not Active`;
+    else {
+      res = `<span class='text-slate-500 text-xs font-bold'>Sale Inactive</span>`;
     }
-
-    
   }
-  else if(state == 2)
-  {
-    res = `><button onclick="makePayment(
-                          ${saleId},
-                          ${priceOffered}
-                  )" class="makePaymentButton"> Make Payment 
-          </button> 
-          <button onclick="rejectingAcceptanceRequestByBuyer(${saleId})" class="rejectingAcceptanceRequestByBuyerButton">
-              Cancel Payment
-          </button>
-          `;
+  else if (state == 2) {
+    res = `<button onclick="makePayment(${saleId}, ${priceOffered})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded-lg transition-all text-xs font-bold shadow-lg shadow-emerald-500/20"> Make Payment </button> 
+           <button onclick="rejectingAcceptanceRequestByBuyer(${saleId})" class="bg-white/5 hover:bg-white/10 text-white px-3 py-1 rounded-lg border border-white/10 transition-all text-xs font-semibold"> Cancel </button>`;
   }
-  else
-  {
-    res = "No Options";
+  else {
+    res = "<span class='text-slate-600 text-xs'>No options</span>";
   }
 
   return res;
- 
+
 }
 
 
-function handleStateOfPurchaseRequestSent(state)
-{
- 
+function handleStateOfPurchaseRequestSent(state) {
 
-  if(state == 0){
-    return "Sent Request";
+
+  if (state == 0) {
+    return "<span class='px-2 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-medium border border-blue-500/20'>Sent Request</span>";
   }
-  else if(state == 1){
-      return "Canceled Request Sent";
+  else if (state == 1) {
+    return "<span class='px-2 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-medium border border-slate-500/20'>Canceled Request</span>";
   }
-  else if(state == 2)
-  {
-      return "Seller Accepted Purchase"
+  else if (state == 2) {
+    return "<span class='px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20'>Seller Accepted</span>"
   }
-  else if(state == 3)
-  {
-      return "Seller Rejected Purchase";
+  else if (state == 3) {
+    return "<span class='px-2 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20'>Seller Rejected</span>";
   }
-  else if(state == 4)
-  {
-    return "Seller Rejected <br> Acceptance Permission"
+  else if (state == 4) {
+    return "<span class='px-2 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20 text-center'>Permission Rejected</span>"
   }
-  else if(state == 5)
-  {
-    return "Canceled Acceptance Request";
+  else if (state == 5) {
+    return "<span class='px-2 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-medium border border-slate-500/20'>Canceled Acceptance</span>";
   }
-  else if(state == 6)
-  {
-    return "Re-Requested Purchase";
+  else if (state == 6) {
+    return "<span class='px-2 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-medium border border-amber-500/20'>Re-Requested</span>";
   }
-  else if(state == 7)
-  {
-    return "Purchase Success";
+  else if (state == 7) {
+    return "<span class='px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30'>Purchase Success</span>";
   }
-  else
-  {
-      return "Invalid";
+  else {
+    return "<span class='text-slate-600 text-xs'>Invalid State</span>";
   }
- 
+
 
 }
 
 
 
-async function makePayment(saleId,priceOffered){
+async function makePayment(saleId, priceOffered) {
 
-  alertUser("","alert-info","none");
-     
+  alertUser("", "alert-info", "none");
+
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  priceOffered = web3.utils.toWei(String(priceOffered));
-  console.log("saleId:",saleId);
-  console.log("priceOffered:",priceOffered);
+  // Convert price to Wei for payment (msg.value must be in Wei)
+  priceOffered = web3.utils.toWei(String(priceOffered), 'ether');
+  console.log("saleId:", saleId);
+  console.log("priceOffered (Wei):", priceOffered);
 
-  try{
+  try {
 
     showTransactionLoading("Payment in progress...");
 
     await contract.methods.transferOwnerShip(
-                                              saleId
-                                            )
-                                            .send(
-                                              {
-                                                from:accountUsedToLogin,
-                                                value:priceOffered
-                                              });
-    
+      saleId
+    )
+      .send(
+        {
+          from: accountUsedToLogin,
+          value: priceOffered
+        });
+
     closeTransactionLoading()
-    alertUser("Successfully Property Transfered","alert-success","block");
+    alertUser("Successfully Property Transfered", "alert-success", "block");
     fetchMyRequestedSales();
   }
-  catch(error)
-  {
-    console.error(error);
-    reason = showError(error);
+  catch (error) {
+    console.error("Error in makePayment:", error);
     closeTransactionLoading();
-    alertUser(reason,"alert-danger","block");
+    alertUser(showError(error), "alert-danger", "block");
   }
-
 }
 
 
 // function: TO cancel the purchase request
-async function cancelPurchaseRequestSentToSeller(saleId)
-{
+async function cancelPurchaseRequestSentToSeller(saleId) {
 
-  alertUser("","alert-info","none");
-     
+  alertUser("", "alert-info", "none");
+
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  try{
+  try {
     showTransactionLoading("Canceling Purchase Request Sent..");
 
     await contract.methods.cancelPurchaseRequestSentToSeller(
-                                                  saleId
-                                                )
-                                                .send({from:accountUsedToLogin});
-     
+      saleId
+    )
+      .send({ from: accountUsedToLogin });
+
     closeTransactionLoading()
-    alertUser("Successfully Canceled Purchase Request","alert-success","block");
+    alertUser("Successfully Canceled Purchase Request", "alert-success", "block");
     fetchMyRequestedSales();
-    
+
   }
-  catch(error)
-  {
-    console.log(error);
-    reason = showError(error);
+  catch (error) {
+    console.error("Error in cancelPurchaseRequestSentToSeller:", error);
     closeTransactionLoading();
-    alertUser(reason,"alert-danger","block");
+    alertUser(showError(error), "alert-danger", "block");
   }
-  
 }
 
 
 
-async function rerequestPurchaseRequest(saleId)
-{
+async function rerequestPurchaseRequest(saleId) {
 
-  alertUser("","alert-info","none");
+  alertUser("", "alert-info", "none");
 
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  price =  await showPrompt().then((value) => {
+  price = await showPrompt().then((value) => {
     return value;
   });
-  
-  if(price!= null && price!=""){
-  try{
 
-   showTransactionLoading("Re-Requesting Purchase...");
+  if (price != null && price != "") {
+    try {
 
-   await contract.methods.rerequestPurchaseRequest(
-                            saleId,
-                            price
-                          )
-                          .send({
-                            from:accountUsedToLogin
-                          })
-                          .on('transactionHash', function(hash) {
-                            // console.log("Transaction hash:", hash);
-                          })
-                          .on('receipt', function(receipt) {
-                              // console.log("Transaction receipt:", receipt);
-                          })
-                          .on('error', function(error, receipt) {
-                              console.error("Transaction error:", error);
-                          });
+      showTransactionLoading("Re-Requesting Purchase...");
+
+      // Workaround: Convert to Wei since smart contract's convertToWei only works with integers
+      const priceInWei = web3.utils.toWei(price, 'ether');
+
+      await contract.methods.rerequestPurchaseRequest(
+        saleId,
+        priceInWei  // Send Wei directly, accepting double conversion
+      )
+        .send({
+          from: accountUsedToLogin
+        })
+        .on('transactionHash', function (hash) {
+          // console.log("Transaction hash:", hash);
+        })
+        .on('receipt', function (receipt) {
+          // console.log("Transaction receipt:", receipt);
+        })
+        .on('error', function (error, receipt) {
+          console.error("Transaction error:", error);
+        });
 
       closeTransactionLoading()
-      alertUser("Request Sent Successfully","alert-success","block");
+      alertUser("Request Sent Successfully", "alert-success", "block");
       fetchMyRequestedSales();
     }
-    catch(error)
-    {
-      console.log(error);
-      reason = showError(error);
+    catch (error) {
+      console.error("Error in rerequestPurchaseRequest:", error);
       closeTransactionLoading();
-      alertUser(reason,"alert-danger","block");
-
+      alertUser(showError(error), "alert-danger", "block");
     }
-  }else{
-    alertUser("Please Enter Price",'alert-warning',"block");
+  } else {
+    alertUser("Please Enter Price", 'alert-warning', "block");
   }
-
 }
 
 
-async function rejectingAcceptanceRequestByBuyer(saleId){
+async function rejectingAcceptanceRequestByBuyer(saleId) {
 
 
-  alertUser("","alert-info","none");
+  alertUser("", "alert-info", "none");
   let contractABI = JSON.parse(window.localStorage.TransferOwnership_ContractABI);
 
   let contractAddress = window.localStorage.TransferOwnership_ContractAddress;
 
-  let contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  let contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
 
-  try{
+  try {
 
     showTransactionLoading("Rejecting Acceptance Request...");
     await contract.methods.rejectingAcceptanceRequestByBuyer(
-                                                  saleId
-                                                )
-                                                .send({from:accountUsedToLogin});
+      saleId
+    )
+      .send({ from: accountUsedToLogin });
 
     closeTransactionLoading()
-    alertUser("Successfully Rejected Acceptance Request","alert-success","block");
+    alertUser("Successfully Rejected Acceptance Request", "alert-success", "block");
     fetchMyRequestedSales();
-    
-  }
-  catch(error)
-  {
-    console.log(error);
-    reason = showError(error);
-    closeTransactionLoading();
-    alertUser(reason,"alert-danger","block");
-  }
-  
 
+  }
+  catch (error) {
+    console.error("Error in rejectingAcceptanceRequestByBuyer:", error);
+    closeTransactionLoading();
+    alertUser(showError(error), "alert-danger", "block");
+  }
 }
 
 
@@ -496,12 +448,12 @@ async function rejectingAcceptanceRequestByBuyer(saleId){
 
 
 function showTransactionLoading(msg) {
-
-  loadingDiv = document.getElementById("loadingDiv");
-
-  loadingDiv.children[0].innerHTML = msg;
-
-  loadingDiv.style.display = "block";
+  const loadingDiv = document.getElementById("loadingDiv");
+  const loadingSpan = document.getElementById("loadingSpan");
+  if (loadingSpan) {
+    loadingSpan.innerHTML = msg || "Processing...";
+  }
+  loadingDiv.style.display = "flex";
 }
 
 function closeTransactionLoading() {
@@ -513,43 +465,60 @@ function closeTransactionLoading() {
 
 // show error reason to user
 function showError(errorOnTransaction) {
+  if (!errorOnTransaction) return "Unknown Error";
 
-
-  errorCode = errorOnTransaction.code;
-
-  if(errorCode==4001){
-    return "Rejected Transaction";
+  // User rejection
+  if (errorOnTransaction.code === 4001) {
+    return "Transaction rejected by user.";
   }
-  else{
-    let start = errorOnTransaction.message.indexOf('{');
-    let end = -1;
-  
-    errorObj = JSON.parse(errorOnTransaction.message.slice(start, end));
-  
-    errorObj = errorObj.value.data.data;
-  
-    txHash = Object.getOwnPropertyNames(errorObj)[0];
-  
-    let reason = errorObj[txHash].reason;
-  
-    return reason;
+
+  // If there's a nested error in message (common with MetaMask/Ganache)
+  if (errorOnTransaction.message && errorOnTransaction.message.includes('{')) {
+    try {
+      const start = errorOnTransaction.message.indexOf('{');
+      const errorObj = JSON.parse(errorOnTransaction.message.slice(start));
+
+      // Try to find reason in nested structure
+      if (errorObj.value && errorObj.value.data && errorObj.value.data.data) {
+        const nestedData = errorObj.value.data.data;
+        const txHash = Object.getOwnPropertyNames(nestedData)[0];
+        if (nestedData[txHash] && nestedData[txHash].reason) {
+          return nestedData[txHash].reason;
+        }
+      }
+
+      if (errorObj.message) return errorObj.message;
+    } catch (e) {
+      console.error("Error parsing complex error message", e);
+    }
   }
+
+  return errorOnTransaction.reason || errorOnTransaction.message || "An error occurred during transaction";
 }
 
 
-function alertUser(msg,msgType,display){
+function alertUser(msg, msgType, display) {
+  const notifyUser = document.getElementById("notifyUser");
+  if (!notifyUser) return;
 
-  console.log(msg,display);
-  notifyUser = document.getElementById("notifyUser");
+  notifyUser.classList = "mb-6 p-4 rounded-xl text-sm font-medium transition-all duration-300";
 
-  notifyUser.classList = [];
-  notifyUser.classList.add("alert");
-  notifyUser.classList.add(msgType);
+  if (msgType === "alert-success") {
+    notifyUser.classList.add("bg-emerald-500/10", "border", "border-emerald-500/20", "text-emerald-400");
+  } else if (msgType === "alert-danger") {
+    notifyUser.classList.add("bg-red-500/10", "border", "border-red-500/20", "text-red-400");
+  } else if (msgType === "alert-warning") {
+    notifyUser.classList.add("bg-amber-500/10", "border", "border-amber-500/20", "text-amber-500");
+  } else {
+    notifyUser.classList.add("bg-primary/10", "border", "border-primary/20", "text-primary");
+  }
+
   notifyUser.innerText = msg;
-  notifyUser.style.display = display;
-
-
-  
+  if (display === "block" || display === "flex") {
+    notifyUser.classList.remove("hidden");
+  } else {
+    notifyUser.classList.add("hidden");
+  }
 }
 
 
@@ -581,4 +550,11 @@ function showPrompt() {
     });
   });
 }
+
+function refreshRequestedSales() {
+  fetchMyRequestedSales();
+  alertUser("Refreshing requested properties...", "alert-info", "block");
+  setTimeout(() => alertUser("", "", "none"), 2000);
+}
+
 

@@ -1,264 +1,216 @@
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #10b981;
+    --error-color: #ef4444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-  margin: 0px !important;
-  padding: 0px !important;
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
 }
 
-
-
-.pdf-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: none;
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
 }
 
-.pdf-popup iframe {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 80%;
-  height: 80%;
-  border: none;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+/* Header & Navigation */
+.hero-header {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-
-.close-btn {
-  font-size: 65px;
-  float: right;
-  color: red;
+.logo-text {
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
 }
 
+.highlight {
+    color: var(--primary-color);
+}
 
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
 
+.user-badge {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+    padding: 0.5rem 1.25rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
 
-#propertiesTable {
-  margin: 50px auto;
+.btn-logout {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.btn-logout:hover {
+    color: var(--error-color);
+}
+
+/* Table Styling Modernized */
+.dashboard-content {
+    padding: 3rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 table {
-
-  margin: auto;
-  border-collapse: collapse;
-  width: 85%;
-  /*! max-width: 800px; */
-}
-
-table th,
-table td {
-  padding: 8px;
-  text-align: left;
-  vertical-align: middle;
-  border: 1px solid #ddd;
-}
-
-table th {
-  background-color: #c0bdbd;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 table caption {
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-  color: black;
-  caption-side: top;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: left;
+    color: var(--text-primary);
+    padding: 2rem;
+    caption-side: top;
 }
 
-table thead th {
-  text-align: center;
+table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+table td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    text-align: center;
 }
 
 table tbody tr:hover {
-  background-color: #d8d8d8;
+    background: rgba(255, 255, 255, 0.03);
 }
 
-/* 
-tr td:first-child:before {
-  counter-increment: Serial;
-  content: counter(Serial);
-
-} */
-
-
-tr>td:nth-child(1) {
-  text-align: center;
+/* Action Buttons in Table */
+.btn-action {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
 }
 
+.btn-pdf { background: #6366f1; }
+.btn-accept { background: var(--accent-color); }
+.btn-reject { background: var(--error-color); }
 
-
-tr>td:nth-child(2) {
-  text-align: center;
+.btn-action:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
 }
 
-
-tr>td:nth-child(3) {
-  text-align: center;
+/* PDF Popup */
+.pdf-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
 }
 
-
-tr>td:nth-child(4) {
-  text-align: center;
+.pdf-popup iframe {
+    width: 90%;
+    height: 90%;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
 }
 
-
-
-tr>td:nth-child(5) {
-  text-align: center;
+.close-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    font-size: 2.5rem;
+    color: white;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s;
 }
 
-
-
-tr>td:nth-child(6) {
-  text-align: center;
+.close-btn:hover {
+    opacity: 1;
 }
 
-
-
-tr>td:nth-child(7) {
-  text-align: center;
+/* Loading Spinner */
+#loadingDiv {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    z-index: 9999;
 }
 
-
-
-tr>td:nth-child(8) {
-  text-align: center;
+.spinner-custom {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(37, 99, 235, 0.1);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-
-
-tr>td:nth-child(9) {
-  text-align: center;
-}
-
-
-tr>td:nth-child(7) button {
-  background: #3bff63;
-  width: 80px;
-  border: none;
-  border-radius: 7px;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-tr>td:nth-child(9) button {
-  background: #3ba3ff;
-  width: 80px;
-  border: none;
-  border-radius: 7px;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-
-}
-
-
-tr>td:nth-child(9) button:hover {
-
-  border-radius: 0px;
-  background: #ff0048;
-
-
-}
-
-
-
-tr>td:nth-child(7) button:hover {
-
-  border-radius: 0px;
-  background: #ff0048;
-}
-
-
-
-
-
-/* Set the position of the div to be at the top */
-
-
-
-
-header {
-  margin: 0px;
-}
-
-
-
-/* Center the h1 heading inside the div */
-
-
-/* Position the button to the top right corner of the div */
-
-
-.heading-box{
-  display: flex;
-  align-items: center;
-  background-color: #000000;
-  color: #ffffff;
-  text-align: center;
-  
-}
-
-.heading{
-  margin-left: 350px;
-}
-
-#nameOfUserButton {
-  margin-left: 250px;
-  color: #f4f4f4;
-  font-size: 20px;
-  background: #000000;
-  border: none;
-  border-radius: 20px;
-  padding: 5px 20px;
-}
-
-#logoutbutton {
-  background-color: #000000;
- border-radius: 20px;
-  
-  font-size: 20px;
-  padding: 5px 10px;
-  border: none;
-}
-
-#logoutbutton a {
-  text-decoration: none;
-  color: #f4f4f4;
-}
-
-.pdfButton{
-  background-color: #9066ee;
-  border: none;
-  font-size: 17px;
-  padding: 4px 15px;
-  color: white;
-  font-weight: 502;
-  box-shadow: 2px 2px 2px gray;
-}
-
-
-.accept {
-  background-color: #1ef23d;
-  border: none;
-  font-size: 17px;
-  padding: 4px 15px;
-  color: white;
-  font-weight: 502;
-  box-shadow: 2px 2px 2px gray;
-}
-
-
-.reject {
-  background-color: #f02c39;
-  border: none;
-  font-size: 17px;
-  padding: 4px 15px;
-  color: white;
-  font-weight: 502;
-  box-shadow: 2px 2px 2px gray;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

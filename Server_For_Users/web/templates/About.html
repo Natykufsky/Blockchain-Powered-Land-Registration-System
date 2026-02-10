@@ -1,52 +1,57 @@
-<!DOCTYPE html>
-<html style="font-size: 16px;" lang="en"><head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="utf-8">
-    <meta name="keywords" content="">
-    <meta name="description" content="">
-    <title>About</title>
-    <link rel="stylesheet" href="nicepage.css" media="screen">
-<link rel="stylesheet" href="About.css" media="screen">
-    <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
-    <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
-    <meta name="generator" content="Nicepage 5.7.9, nicepage.com">
-    <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
-    
-    
-    <script type="application/ld+json">{
-		"@context": "http://schema.org",
-		"@type": "Organization",
-		"name": "Land Registry"
-}</script>
-    <meta name="theme-color" content="#478ac9">
-    <meta property="og:title" content="About">
-    <meta property="og:description" content="">
-    <meta property="og:type" content="website">
-  <meta data-intl-tel-input-cdn-path="intlTelInput/"></head>
-  <body class="u-body u-xl-mode" data-lang="en"><header class="heading u-clearfix u-grey-70 u-header u-header" id="sec-bf5b"><div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
-        <h1 class="u-align-center u-text u-text-palette-3-base u-text-1">Welcome&nbsp;To&nbsp;Land Registry Portal</h1>
-      </div></header>
-    <section class="u-clearfix u-section-1" id="sec-6da0">
-      <div class="u-clearfix u-sheet u-sheet-1"></div>
-    </section>
-    
-    
-    <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-652a"><div class="u-clearfix u-sheet u-sheet-1">
-        <a href="https://nicepage.com/website-builder" class="u-align-center u-border-1 u-border-active-palette-2-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-btn u-button-style u-none u-text-body-alt-color u-text-hover-custom-color-4 u-btn-1">About</a>
-        <a href="https://nicepage.com/website-builder" class="u-align-center u-border-1 u-border-active-palette-2-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-btn u-button-style u-none u-text-body-alt-color u-text-hover-custom-color-4 u-btn-2">contact</a>
-        <p class="u-text u-text-default u-text-1">Developed by N17&nbsp; team<br>&nbsp;Under Guidence of&nbsp; Siva Narayana
-        </p>
-      </div></footer>
-    <section class="u-backlink u-clearfix u-grey-80">
-      <a class="u-link" href="https://nicepage.com/website-templates" target="_blank">
-        <span>Website Templates</span>
-      </a>
-      <p class="u-text">
-        <span>created with</span>
+{% extends 'base.html' %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="flex-1 flex justify-center items-start py-20 px-4 w-full">
+  <div class="glass p-12 rounded-[2.5rem] w-full max-w-[800px] shadow-2xl border border-white/10 animate-fade-in-up">
+    <h2 class="text-4xl font-bold mb-8 text-white text-center">About GovChain Portal</h2>
+
+    <div class="space-y-8 text-slate-300 leading-relaxed text-lg">
+      <p>
+        The <span class="text-primary font-bold">BLOCKCHAIN-POWERED LAND OWNERSHIP MANAGEMENT SYSTEM</span> (GovChain)
+        is a state-of-the-art platform designed to revolutionize land registration and transactions through
+        decentralized technology.
       </p>
-      <a class="u-link" href="" target="_blank">
-        <span>Website Builder Software</span>
-      </a>. 
-    </section>
-  
-</body></html>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+          <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Unrivaled Security
+          </h3>
+          <p class="text-sm">Leveraging blockchain ledgers to ensure your property records are immutable, transparent,
+            and protected against unauthorized changes.</p>
+        </div>
+
+        <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+          <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Instant Transactions
+          </h3>
+          <p class="text-sm">Eliminate bureaucracy with smart contract-powered transfers. Buy and sell land with
+            confidence and speed on a global network.</p>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/10 text-center">
+        <p class="text-sm text-slate-500 italic">
+          Developed under the academic guidance of Prof. Ogedebe M. Peter <br>
+          Project Lead: Kufre N Moses (NOU242341326)
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-12 text-center">
+      <a href="/" class="btn-primary px-8 py-3">Get Started</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

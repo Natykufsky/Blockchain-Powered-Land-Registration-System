@@ -45,14 +45,26 @@ def mapRevenueDeptIdToEmployee(revenueDeptId,employeeId):
 
 
     # Call the mapRevenueDeptIdToEmployee function with the desired parameters
-    revenue_dept_id = revenueDeptId
+    # Ensure revenue_dept_id is properly converted to integer
+    try:
+        revenue_dept_id = int(revenueDeptId)
+    except (ValueError, TypeError) as e:
+        print(f"Error converting revenue_dept_id to int: {e}")
+        return False
+    
     employee_address = employeeId  # Insert the employee's Ethereum address here
 
+    # Ensure employee_address is a valid checksum address
+    if not web3.is_address(employee_address):
+        print(f"Invalid Ethereum address: {employee_address}")
+        return False
+    
+    employee_address = web3.to_checksum_address(employee_address)
    
-    txn_hash = contract.functions.mapRevenueDeptIdToEmployee(int(revenue_dept_id), employee_address).transact({'from': config["Address_Used_To_Deploy_Contract"]})
+    txn_hash = contract.functions.mapRevenueDeptIdToEmployee(revenue_dept_id, employee_address).transact({'from': config["Address_Used_To_Deploy_Contract"]})
    
     # Wait for the transaction to be mined
-    receipt = web3.eth.waitForTransactionReceipt(txn_hash)
+    receipt = web3.eth.wait_for_transaction_receipt(txn_hash)
 
 
     # print(web3.toJSON(receipt))

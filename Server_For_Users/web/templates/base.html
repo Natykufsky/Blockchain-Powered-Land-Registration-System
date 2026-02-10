@@ -1,125 +1,128 @@
 <!DOCTYPE html>
-<html style="font-size: 16px;" lang="en">
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta charset="utf-8">
-  <meta name="keywords" content="">
-  <meta name="description" content="">
+  <title>{% block title %} {% endblock %} | BLOCKCHAIN-POWERED LAND OWNERSHIP MANAGEMENT SYSTEM</title>
 
-  <title> {% block title %} {% endblock %} </title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/nicepage.css" media="screen">
-  <link rel="stylesheet" href="css/base.css" media="screen">
-
-  <script class="u-script" type="text/javascript" src="js/jquery.js" defer=""></script>
-  <script class="u-script" type="text/javascript" src="js/nicepage.js" defer=""></script>
-  <meta name="generator" content="Nicepage 5.7.9, nicepage.com">
-  <link id="u-theme-google-font" rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
-
-  <!-- bootstrap -->
-  <link rel="stylesheet" href="bootstrap/bootstrap.min.css"
-    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
-  <script src="bootstrap/jquery-3.3.1.slim.min.js"
-    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-    crossorigin="anonymous"></script>
-  <script src="bootstrap/popper.min.js"
-    integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
-    crossorigin="anonymous"></script>
-  <script src="bootstrap/bootstrap.min.js"
-    integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
-    crossorigin="anonymous"></script>
-
-
-  <!-- contract details -->
-  <script src="js/contractsDetails.js"></script>
-  <script src="js/web3.min.js"></script>
-
-
-  <script type="application/ld+json">{
-    "@context": "http://schema.org",
-    "@type": "Organization",
-    "name": "Land Registry"
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#6366f1',
+              hover: '#4f46e5',
+            },
+            secondary: '#94a3b8',
+            dark: {
+              900: '#0f172a',
+              800: '#1e1b4b',
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+        }
+      }
     }
   </script>
 
-  <meta name="theme-color" content="#478ac9">
-  <meta property="og:title" content="dashboard">
-  <meta property="og:description" content="">
-  <meta property="og:type" content="website">
-  <meta data-intl-tel-input-cdn-path="intlTelInput/">
+  <style type="text/tailwindcss">
+    @layer base {
+            body {
+                @apply bg-gradient-to-br from-dark-900 to-dark-800 text-slate-50 min-h-screen flex flex-col;
+            }
+        }
+        @layer components {
+            .glass {
+                @apply bg-white/5 backdrop-blur-md border border-white/10;
+            }
+            .nav-link {
+                @apply text-secondary hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg transition-all duration-300 font-medium whitespace-nowrap;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg shadow-primary/20;
+            }
+        }
+    </style>
+
+  <!-- Scripts -->
+  <script src="js/contractsDetails.js"></script>
+  <script src="js/web3.min.js"></script>
+
+  <meta name="theme-color" content="#2563eb">
 </head>
 
-<body class="u-body u-xl-mode" data-lang="en">
-  <header>
-    <div>
-      <h1> Welcome To Land Registry Portal</h1>
-    </div>
+<body class="antialiased">
+  <header class="py-8 px-4 text-center">
+    <a href="/" class="inline-block uppercase tracking-tight group">
+      <span class="text-2xl md:text-3xl font-bold">BLOCKCHAIN-POWERED </span>
+      <span class="text-2xl md:text-3xl font-bold text-primary">LAND OWNERSHIP MANAGEMENT SYSTEM</span>
+    </a>
+    <h1 class="text-xl font-semibold mt-2 text-secondary">Citizen Portal</h1>
   </header>
-  <section>
 
-    <div id="navBar">
+  {% if session.get('userAddress') or current_user_address %}
+  <nav class="glass border-y border-white/10 py-3 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-4">
+      {% if add_property %}
+      <button class="btn-primary" id="addPropertyButtonDiv" onclick="toggleAddProperty()">
+        Add Property
+      </button>
+      {% else %}
+      <a class="nav-link" href="/dashboard">Dashboard</a>
+      {% endif %}
 
-      <div>
+      <a class="nav-link" href="/MySales">Sales Created</a>
+      <a class="nav-link" href="/myRequestedSales">Requested Sales</a>
+      <a class="nav-link" href="/availableToBuy">Available To Buy</a>
+      <a class="nav-link" href="/logout" onclick="logout()">Logout</a>
 
-        {% if add_property %}
-        <button class="dashboardLinks" id="addPropertyButtonDiv" onclick="toggleAddProperty()">
-          Add Property
-        </button>
-        {% else %}
-        <a class="dashboardLinks" href="/dashboard">
-          Dashboard
-        </a>
-        {% endif %}
-
-
-
-        <a class="dashboardLinks" href="/MySales">Sales Created</a>
-
-        <a class="dashboardLinks" href="/myRequestedSales">Requested Sales</a>
-
-        <a class="dashboardLinks" href="/availableToBuy"> Available To Buy</a>
-
-        <a class="dashboardLinks" href="/logout" onclick="logout()">Logout </a>
-
-        <button id="nameOfUser">
-        </button>
+      <div class="ml-auto">
+        <span id="nameOfUser"
+          class="bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-sm font-semibold">
+          Citizen
+        </span>
       </div>
-
-
     </div>
+  </nav>
+  {% endif %}
 
-
-
-  </section>
-
-  
-
-  <main>
+  <main class="flex-grow max-w-7xl mx-auto w-full px-2 py-3">
+    <div id="notifyUser" class="mb-4 p-4 rounded-xl hidden" role="alert"></div>
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="u-align-center u-clearfix u-footer u-grey-80 u-footer" id="sec-652a">
-    <div class="u-clearfix u-sheet u-sheet-1">
-      <a href="https://nicepage.com/website-builder"
-        class="u-align-center u-border-1 u-border-active-palette-2-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-btn u-button-style u-none u-text-body-alt-color u-text-hover-custom-color-4 u-btn-1">About</a>
-      <a href="https://nicepage.com/website-builder"
-        class="u-align-center u-border-1 u-border-active-palette-2-base u-border-hover-palette-1-base u-border-no-left u-border-no-right u-border-no-top u-btn u-button-style u-none u-text-body-alt-color u-text-hover-custom-color-4 u-btn-2">contact</a>
-      <p class="u-text u-text-default u-text-1">Developed by N17&nbsp; team<br>&nbsp;Under Guidence of&nbsp; Siva
-        Narayana
-      </p>
+  <footer class="mt-auto py-8 px-4 bg-black/20 border-t border-white/10 text-center">
+    <div class="mb-6 space-y-1 text-secondary text-sm">
+      <p>Developed by Kufre N Moses (NOU242341326)</p>
+      <p>Under Guidance of Prof. Ogedebe M. Peter</p>
     </div>
+    <p class="text-xs text-slate-500">&copy; 2026 Government Revenue Department. All Rights Reserved. Blockchain
+      Secured.</p>
   </footer>
 
-  <div id="loadingDiv" style="display: none;">
-    <span> Loading .. </span>
-    <div id="loading" class="spinner-border text-primary" role="status">
-      <span class="sr-only">Loading...</span>
-    </div>
+  <div id="loadingDiv"
+    class="fixed inset-0 bg-dark-900/95 backdrop-blur-sm z-[9999] hidden flex-col justify-center items-center text-white">
+    <div class="w-12 h-12 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-6"></div>
+    <span id="loadingSpan" class="text-lg font-medium">Processing Transaction...</span>
   </div>
 
+  <!-- Mobile Nav Script (Optional Enhancement) -->
+  <script>
+    function toggleMobileMenu() {
+      // Placeholder for potentially more complex mobile menu logic
+    }
+  </script>
 </body>
 
 </html>

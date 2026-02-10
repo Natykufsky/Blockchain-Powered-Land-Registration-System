@@ -1,119 +1,118 @@
 
-async function checkConnection()
-{
-    
+async function checkConnection() {
+
   // checking Meta-Mask extension is added or not
-  if (window.ethereum){
+  if (window.ethereum) {
 
-    try{
-    //   await ethereum.enable();
+    try {
+      //   await ethereum.enable();
 
-      window.web3  = new Web3(ethereum);
+      window.web3 = new Web3(ethereum);
 
       const accounts = await web3.eth.getAccounts();
 
       const account = accounts[0];
 
       console.log("Connected To metamask:", account);
-      console.log("Account Used to Login:",window.localStorage["userAddress"])
+      console.log("Account Used to Login:", window.localStorage["userAddress"])
       console.log(account != window.localStorage["userAddress"]);
 
-      if( account != window.localStorage["userAddress"])
-      {
-        alert("wrong account detected..!! please connect again");
-
+      if (account != window.localStorage["userAddress"]) {
+        alertUser("Wrong account detected! Please connect the correct account in MetaMask.", "alert-danger", "block");
         window.location.href = "/";
       }
-      else
-      {
+      else {
         console.log("No Account changes detected !!");
 
-        alertUser(`Wallet Connected : <span id="connectedAccount">${account.slice(0,6)}...${account.slice(-4)} </span>`,'alert-success','block');
+        alertUser(`Wallet Connected : <span id="connectedAccount">${account.slice(0, 6)}...${account.slice(-4)} </span>`, 'alert-success', 'block');
       }
 
-    }catch(error){
+    } catch (error) {
 
-      alert(error);
+      console.log(error);
+      alertUser(showError(error), "alert-danger", "block");
 
     }
 
-  }else{
-    alert("Please Add Metamask extension for your browser !!");
+  } else {
+    alertUser("Please Add Metamask extension for your browser !!", "alert-warning", "block");
   }
 
 }
 
 
-async function registerUser(event)
-{
-  
+async function registerUser(event) {
+
   event.preventDefault();
 
-  alertUser("","alert-info","none");
+  alertUser("", "alert-info", "none");
 
   let fname = document.getElementById("firstName").value;
   let lname = document.getElementById("lastName").value;
   let dob = document.getElementById("dob").value;
-  let aadharNo = document.getElementById("aadharNo").value;
+  let ninNo = document.getElementById("ninNo").value;
 
-  
+
 
   let contractABI = JSON.parse(window.localStorage.Users_ContractABI);
   let contractAddress = window.localStorage.Users_ContractAddress;
 
-  window.contract = new window.web3.eth.Contract(contractABI,contractAddress);
+  window.contract = new window.web3.eth.Contract(contractABI, contractAddress);
 
   let accountUsedToLogin = window.localStorage["userAddress"];
-  
-  try{
+
+  try {
     const accounts = await web3.eth.getAccounts();
     const connectedAccountToMetaMask = accounts[0];
 
-    if (connectedAccountToMetaMask == accountUsedToLogin)
-    {
+    if (connectedAccountToMetaMask == accountUsedToLogin) {
 
       showTransactionLoading("Registering User....");
 
-      window.result = await contract.methods.registerUser(fname,lname,dob,aadharNo)
-                                            .send({from:accountUsedToLogin});
-      
+      window.result = await contract.methods.registerUser(fname, lname, dob, ninNo)
+        .send({ from: accountUsedToLogin });
+
 
       userDetails = await contract.methods.users(accountUsedToLogin)
-                            .call()
-                            .then(
-                              function(value){
-                                return value;
-                              });
+        .call()
+        .then(
+          function (value) {
+            return value;
+          });
 
       console.log(userDetails);
 
-      if (userDetails["userID"]== accountUsedToLogin){
+      if (userDetails["userID"] == accountUsedToLogin) {
         // registarion successfull
         console.log("Registered Successfully");
         showTransactionLoading(`Registered Successfully <br> Redirecting to Dashboard`);
-        
+
         // redirect to dashboard
         window.location.href = "/dashboard";
       }
-      else
-      {
+      else {
         closeTransactionLoading()
-        alertUser(`Registration Failed! Try again`,"alert-danger","block");
+        alertUser(`Registration Failed! Try again`, "alert-danger", "block");
       }
     }
-    else
-    {
-      alertUser(`Account MisMatched Please Connect your account "${accountUsedToLogin.slice(0,6)}...${accountUsedToLogin.slice(-4)}" to Metamask`,"alert-warning","block");
+    else {
+      alertUser(`Account MisMatched Please Connect your account "${accountUsedToLogin.slice(0, 6)}...${accountUsedToLogin.slice(-4)}" to Metamask`, "alert-warning", "block");
     }
   }
-  catch(error)
-  {
-    reason = showError(error);
-
+  catch (error) {
+    console.error("Registration error:", error);
     closeTransactionLoading();
-    alertUser(reason,"alert-danger","block");
+
+    let reason;
+    if (error.code === 4001) {
+      reason = "Transaction rejected by user. Registration cancelled.";
+    } else {
+      reason = showError(error);
+    }
+
+    alertUser(reason, "alert-danger", "block");
   }
-  
+
 
 }
 
@@ -121,12 +120,12 @@ async function registerUser(event)
 
 
 function showTransactionLoading(msg) {
-
-  loadingDiv = document.getElementById("loadingDiv");
-
-  loadingDiv.children[0].innerHTML = msg;
-
-  loadingDiv.style.display = "block";
+  const loadingDiv = document.getElementById("loadingDiv");
+  const loadingSpan = document.getElementById("loadingSpan");
+  if (loadingSpan) {
+    loadingSpan.innerHTML = msg || "Processing...";
+  }
+  loadingDiv.style.display = "flex";
 }
 
 function closeTransactionLoading() {
@@ -137,43 +136,59 @@ function closeTransactionLoading() {
 
 
 // show error reason to user
+// show error reason to user
 function showError(errorOnTransaction) {
+  if (!errorOnTransaction) return "Unknown Error";
 
-
-  errorCode = errorOnTransaction.code;
-
-  if(errorCode==4001){
-    return "Rejected Transaction";
+  // User rejection
+  if (errorOnTransaction.code === 4001) {
+    return "Transaction rejected by user.";
   }
-  else{
-    let start = errorOnTransaction.message.indexOf('{');
-    let end = -1;
-  
-    errorObj = JSON.parse(errorOnTransaction.message.slice(start, end));
-  
-    errorObj = errorObj.value.data.data;
-  
-    txHash = Object.getOwnPropertyNames(errorObj)[0];
-  
-    let reason = errorObj[txHash].reason;
-  
-    return reason;
+
+  // If there's a nested error in message (common with MetaMask/Ganache)
+  if (errorOnTransaction.message && errorOnTransaction.message.includes('{')) {
+    try {
+      const start = errorOnTransaction.message.indexOf('{');
+      const errorObj = JSON.parse(errorOnTransaction.message.slice(start));
+
+      // Try to find reason in nested structure
+      if (errorObj.value && errorObj.value.data && errorObj.value.data.data) {
+        const nestedData = errorObj.value.data.data;
+        const txHash = Object.getOwnPropertyNames(nestedData)[0];
+        if (nestedData[txHash] && nestedData[txHash].reason) {
+          return nestedData[txHash].reason;
+        }
+      }
+
+      if (errorObj.message) return errorObj.message;
+    } catch (e) {
+      console.error("Error parsing complex error message", e);
+    }
   }
+
+  return errorOnTransaction.reason || errorOnTransaction.message || "An error occurred during transaction";
 }
 
+function alertUser(msg, msgType, display) {
+  const notifyUser = document.getElementById("notifyUser");
+  if (!notifyUser) return;
 
-function alertUser(msg,msgType,display){
+  notifyUser.classList = "mb-6 p-4 rounded-xl text-sm font-medium transition-all duration-300";
 
-  console.log(msg,display);
-  notifyUser = document.getElementById("notifyUser");
+  if (msgType === "alert-success") {
+    notifyUser.classList.add("bg-emerald-500/10", "border", "border-emerald-500/20", "text-emerald-400");
+  } else if (msgType === "alert-danger") {
+    notifyUser.classList.add("bg-red-500/10", "border", "border-red-500/20", "text-red-400");
+  } else if (msgType === "alert-warning") {
+    notifyUser.classList.add("bg-amber-500/10", "border", "border-amber-500/20", "text-amber-500");
+  } else {
+    notifyUser.classList.add("bg-primary/10", "border", "border-primary/20", "text-primary");
+  }
 
-  notifyUser.classList = [];
-  notifyUser.classList.add("alert");
-  notifyUser.classList.add(msgType);
   notifyUser.innerHTML = msg;
-  notifyUser.style.display = display;
-
-
-  
+  if (display === "block" || display === "flex") {
+    notifyUser.classList.remove("hidden");
+  } else {
+    notifyUser.classList.add("hidden");
+  }
 }
-

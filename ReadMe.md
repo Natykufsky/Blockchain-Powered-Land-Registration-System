@@ -160,7 +160,7 @@ This project contains mainly two steps:
    7.2 Open config.json file & Set the configuration with nano or text editor.
    ```
    {
-
+ 
       "Ganache_Url" : "<Ganache RPC Server URL>",  // default: http://127.0.0.1:7545
 
       "NETWORK_CHAIN_ID": <Ganache Network ID>,    // default: 5777
@@ -177,11 +177,13 @@ This project contains mainly two steps:
 
    7.3 Activate the virtual environment you created in a separate terminal
    ```
-   source <env_name>/bin/activate
-   ```
+   Use the venv Python directly instead of relying on activation: Run this command from the Server_For_Revenue_Dept director
 
+   ../venv/Scripts/python.exe app.py
+   ```
    7.4 Run the flask server
    ```
+   
    python3 app.py
    ```
 

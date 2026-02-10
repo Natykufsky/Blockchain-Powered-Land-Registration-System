@@ -1,132 +1,165 @@
-<htmL>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Admin | BLOCKCHAIN-POWERED LAND OWNERSHIP MANAGEMENT SYSTEM</title>
 
-    <title> Admin </title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
 
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ url_for('static', filename='js/contractsDetails.js') }}"></script>
     <script src="{{ url_for('static', filename='js/web3.min.js') }}"></script>
-
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-    <!-- bootsrarp -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
-    <script src="{{ url_for('static', filename='bootstrap/jquery-3.3.1.slim.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap/popper.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
+        .btn-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
 
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/formAlignment.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-    
-
+        .btn-gradient:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 
-<body>
-
-    <header>
-        <div>
-            <h1> Welcome To Revenue Department Portal</h1>
-        </div>
+<body class="bg-[#0f172a] text-slate-200 font-['Outfit'] min-h-screen">
+    <header
+        class="sticky top-0 z-50 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 px-8 py-4 flex justify-between items-center">
+        <a href="/" class="text-xs md:text-sm font-bold tracking-tight uppercase">
+            BLOCKCHAIN-POWERED <span class="text-blue-500">LAND OWNERSHIP MANAGEMENT SYSTEM</span>
+        </a>
+        <h1 class="text-sm font-semibold text-slate-400">Revenue Admin Portal</h1>
     </header>
 
-    <div class="alert " role="alert" id="notifyUser">
-    </div>
+    <main class="max-w-[800px] mx-auto p-8 flex flex-col items-center justify-center min-h-[80vh]">
+        <div id="notifyUser" style="display: none;" class="w-full"></div>
 
-    <div id="connectToBlockchainDiv" style="display: block;">
-        <h2> Connect Your Wallet </h2>
-        <button onclick="connectToBlockchain()"> Connect</button>
-    </div>
-    <br><br>
-
-    <div id="passwordDiv" style="display: none;">
-
-        <input type="text" placeholder="Enter Password" value="12345678" id="password">
-
-        <button onclick="login()"> Login </button>
-
-    </div>
-
-
-    <div id="dashboardDiv" style="display: none;">
-
-        <div id="addEmployee">
-
-            <h3> &nbsp;&nbsp;&nbsp; Add Employee To Revenue Department &nbsp;&nbsp;&nbsp; </h3>
-
-            
-            <form class="pure-form pure-form-aligned" id="addEmployeeForm" method="post" onsubmit="addEmployee(event)">
-                <fieldset>
-
-                    <div class="pure-control-group">
-                        <label for="employeeWallet"> Employee Wallet </label>
-                        <label class="colonInForm"> :</label>
-                        <input type="text" id="employeeWallet" placeholder="Enter Wallet" required>
-
-                    </div>
-
-                    <div class="pure-control-group">
-                        <label for="password"> Password </label>
-                        <label class="colonInForm"> :</label>
-                        <input type="text" id="password" placeholder="Enter password"  value='12345678' required>
-                    </div>
-
-                    <div class="pure-control-group">
-                        <label for="firstname"> First Name </label>
-                        <label class="colonInForm"> :</label>
-                        <input type="text" id="firstname" placeholder="Enter First name" required>
-                    </div>
-
-                    <div class="pure-control-group">
-                        <label for="lastName"> Last Name </label>
-                        <label class="colonInForm"> :</label>
-                        <input type="text" id="lastName" placeholder="Enter Last name" required>
-                    </div>
-
-
-
-                    <div class="pure-control-group">
-                        <label for="revenueDeptId"> Revenue Dept Id</label>
-                        <label class="colonInForm"> :</label>
-                        <input type="number" id="revenueDeptId" placeholder="Enter Revenue Dept Id" required>
-                    </div>
-
-
-
-
-                    <div class="pure-controls" id="formFotter">
-                        <label for="cb" class="pure-checkbox" style="margin-left: -60px;">
-                            <input id="cb" type="checkbox" required> I've read the terms and conditions
-                        </label>
-
-                        <button type="submit" 
-                                class="pure-button pure-button-primary" 
-                                id="addEmployeeButton"
-                                > 
-                            Add
-                        </button>
-                    </div>
-                </fieldset>
-            </form>
-
+        <!-- Wallet Connection -->
+        <div id="connectToBlockchainDiv"
+            class="glass-card p-10 rounded-[2.5rem] w-full text-center space-y-6 shadow-2xl" style="display: block;">
+            <div class="flex justify-center">
+                <div class="bg-blue-500/10 p-5 rounded-3xl text-blue-500 border border-blue-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        viewBox="0 0 16 16">
+                        <path
+                            d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z" />
+                    </svg>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold">Connect Wallet</h2>
+            <p class="text-slate-400">Access the Revenue Department administrative console by connecting your authorized
+                wallet.</p>
+            <button class="btn-gradient w-full py-4 rounded-2xl font-bold text-lg" onclick="connectToBlockchain()">
+                Connect MetaMask
+            </button>
         </div>
 
-        <div id="mapRevenueDept">
-
-
+        <!-- Admin Login -->
+        <div id="passwordDiv" class="glass-card p-10 rounded-[2.5rem] w-full text-center space-y-6 shadow-2xl"
+            style="display: none;">
+            <div class="flex justify-center">
+                <div class="bg-blue-500/10 p-5 rounded-3xl text-blue-500 border border-blue-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        viewBox="0 0 16 16">
+                        <path
+                            d="M5.338 1.59a6.1 6.1 0 0 0-2.837.856.48.48 0 0 0-.178.644l.06.098a.5.5 0 0 0 .598.179 5.1 5.1 0 0 1 2.352-.714c.254-.014.51-.014.764 0a5.1 5.1 0 0 1 2.352.714.5.5 0 0 0 .598-.179l.06-.098a.48.48 0 0 0-.178-.644 6.1 6.1 0 0 0-2.837-.856 6.1 6.1 0 0 0-2.837 0zm9.139 9.69a1.5 1.5 0 0 1-1.5 1.5H3.023a1.5 1.5 0 0 1-1.5-1.5V6.86a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v4.42zM3.023 6.36a.5.5 0 0 0-.5.5v4.42a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V6.86a.5.5 0 0 0-.5-.5h-10z" />
+                        <path d="M8 8.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                    </svg>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold">Admin Login</h2>
+            <div class="space-y-4">
+                <input type="password" placeholder="Administrator Password" value="12345678" id="password"
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-center focus:border-blue-500 transition-colors placeholder:text-slate-600 outline-none">
+                <button class="btn-gradient w-full py-4 rounded-2xl font-bold text-lg" onclick="login()">
+                    Authenticate
+                </button>
+            </div>
         </div>
-    </div>
 
+        <!-- Dashboard / Add Employee -->
+        <div id="dashboardDiv" style="display: none; width: 100%;">
+            <div class="glass-card p-10 rounded-[2.5rem] w-full shadow-2xl">
+                <h3 class="text-2xl font-bold mb-8">Register New Employee</h3>
 
-    <div id="loadingDiv" style="display: none;">
-        <span id="loadingText"> Connecting to Wallet ... </span>
-        <div id="loading" class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
+                <form id="addEmployeeForm" onsubmit="addEmployee(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2 space-y-2 text-left">
+                            <label class="text-sm font-semibold text-slate-400 px-1">Employee Wallet Address</label>
+                            <input type="text" id="employeeWallet" placeholder="0x..." required
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-blue-500 transition-colors outline-none font-mono text-sm">
+                        </div>
+
+                        <div class="space-y-2 text-left">
+                            <label class="text-sm font-semibold text-slate-400 px-1">First Name</label>
+                            <input type="text" id="firstname" placeholder="John" required
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-blue-500 transition-colors outline-none">
+                        </div>
+
+                        <div class="space-y-2 text-left">
+                            <label class="text-sm font-semibold text-slate-400 px-1">Last Name</label>
+                            <input type="text" id="lastName" placeholder="Doe" required
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-blue-500 transition-colors outline-none">
+                        </div>
+
+                        <div class="space-y-2 text-left">
+                            <label class="text-sm font-semibold text-slate-400 px-1">Revenue Dept ID</label>
+                            <input type="number" id="revenueDeptId" placeholder="e.g. 101" required
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-blue-500 transition-colors outline-none">
+                        </div>
+
+                        <div class="space-y-2 text-left">
+                            <label class="text-sm font-semibold text-slate-400 px-1">Initial Password</label>
+                            <input type="text" id="password_emp" value="12345678" required
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 focus:border-blue-500 transition-colors outline-none">
+                        </div>
+
+                        <div class="md:col-span-2 py-4">
+                            <label class="flex items-center gap-4 cursor-pointer group">
+                                <input id="cb" type="checkbox" required
+                                    class="w-5 h-5 rounded border-white/10 bg-white/5 text-blue-500 focus:ring-blue-500/20">
+                                <span class="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
+                                    Confirm employee credentials and mandatory blockchain department mapping
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="md:col-span-2 pt-4">
+                            <button type="submit" id="addEmployeeButton"
+                                class="btn-gradient w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/20">
+                                Authorize & Map Employee
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
+    </main>
+
+    <div id="loadingDiv" style="display: none;"
+        class="fixed inset-0 z-[60] bg-[#0f172a]/95 backdrop-blur-xl flex flex-col items-center justify-center gap-6">
+        <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+        <span id="loadingText" class="text-slate-400 text-lg font-medium">Processing Transaction...</span>
     </div>
 </body>
 
-</htmL>
+</html>

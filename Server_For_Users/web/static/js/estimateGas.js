@@ -22,14 +22,14 @@ priceOffered = web3.utils.toWei(String(5));
 
 // estimate the gas required for the transaction
 web3.eth.estimateGas({
-    from: account,
-    to: contractAddress,
-    data: txData,
-    value: priceOffered,
-    overrides: {
-      deadlineForPayment: Math.floor(Date.now() / 1000) + 3600 // set deadline to one hour from now
-    }
-  })
+  from: account,
+  to: contractAddress,
+  data: txData,
+  value: priceOffered,
+  overrides: {
+    deadlineForPayment: Math.floor(Date.now() / 1000) + 3600 // set deadline to one hour from now
+  }
+})
   .then((gas) => {
     // pass the estimated gas with the send function
     console.log(gas);

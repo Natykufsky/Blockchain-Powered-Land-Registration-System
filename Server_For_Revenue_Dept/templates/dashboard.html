@@ -1,66 +1,113 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <title> Dashboard </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue Dashboard | BLOCKCHAIN-POWERED LAND OWNERSHIP MANAGEMENT SYSTEM</title>
+
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
 
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/contractsDetails.js') }}"></script>
     <script src="{{ url_for('static', filename='js/web3.min.js') }}"></script>
-
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
-
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
 
-<body onload="checkConnection()">
-
-    <header>
-        <div class="heading-box">
-            <h1 class="heading"> Welcome To Revenue Department Portal</h1>
-            <div class="btns">
-                <button id="nameOfUserButton">
-                    <span id="nameOfUser">  </span>
-                </button>
-                <button id="logoutbutton"> <a href="/logout"> Logout </a></button>
+<body onload="checkConnection()" class="bg-[#0f172a] text-slate-200 font-['Outfit'] min-h-screen">
+    <header
+        class="sticky top-0 z-50 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/10 px-8 py-4 flex justify-between items-center">
+        <a href="/" class="text-xs md:text-sm font-bold tracking-tight uppercase">
+            BLOCKCHAIN-POWERED <span class="text-blue-500">LAND OWNERSHIP MANAGEMENT SYSTEM</span>
+        </a>
+        <div class="flex items-center gap-6">
+            <div
+                class="hidden md:flex bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-blue-500/20">
+                <span id="nameOfUser">Loading...</span>
             </div>
-            
+            <a href="/logout" class="text-sm font-medium text-slate-400 hover:text-red-400 transition-colors">Logout</a>
         </div>
     </header>
 
-    <div class="alert " role="alert" id="notifyUser">
-    </div>
+    <main class="max-w-[1400px] mx-auto p-8">
+        <div id="notifyUser" style="display: none;"></div>
 
+        <div class="glass-card rounded-[2rem] overflow-hidden shadow-2xl">
+            <div class="p-8 border-b border-white/10 flex justify-between items-center">
+                <h1 class="text-2xl font-bold flex items-center gap-4">
+                    Revenue Department Control Panel
+                    <button onclick="refreshDeptProperties()"
+                        class="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all text-slate-400 hover:text-white"
+                        title="Refresh Properties">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
+                </h1>
+                <div class="text-sm text-slate-400 font-medium">Department ID: <span id="revenueDeptId"
+                        class="text-blue-400">--</span></div>
+            </div>
 
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-white/5 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                            <th class="px-6 py-4">Property ID</th>
+                            <th class="px-6 py-4">Location ID</th>
+                            <th class="px-6 py-4">Survey Number</th>
+                            <th class="px-6 py-4">Area (sq.ft)</th>
+                            <th class="px-6 py-4">Documents</th>
+                            <th class="px-6 py-4 text-center">Actions / Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertiesTableBody" class="divide-y divide-white/5">
+                        <!-- Dynamic Content Loaded by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
-
-    <div id="propertiesTable" style="display:block;">
-
-        <table>
-            <caption>Welcom To Revenue Department <span id="revenueDeptId"></span></caption>
-            <thead>
-                <th> Property Id </th>
-                <th> Location Id</th>
-                <th> Survey Number</th>
-                <th> Area </th>
-                <th> Docs </th>
-                <th> State </th>
-            </thead>
-            <tbody id="propertiesTableBody"></tbody>
-        </table>
-    </div>
-
-
-    <div class="pdf-popup">
-        <iframe id="pdf-frame" src="" frameborder="0"></iframe>
-        <div class="close-btn" onclick="closePopup()">X</div>
-    </div>
-
-    <div id="loadingDiv" style="display: none;">
-        <span id="loadingText"> Connecting to Wallet ... </span>
-        <div id="loading" class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
+    <!-- PDF Popup -->
+    <div
+        class="pdf-popup fixed inset-0 z-[10001] bg-slate-900/90 backdrop-blur-md hidden flex-col items-center justify-center p-4">
+        <div
+            class="relative w-full max-w-5xl h-[85vh] bg-slate-800 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <iframe id="pdf-frame" src="" class="w-full h-full border-none"></iframe>
+            <button
+                class="absolute top-4 right-4 bg-white/10 hover:bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg"
+                onclick="closePopup()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     </div>
 
+    <div id="loadingDiv" style="display: none;">
+        <div class="spinner-custom"></div>
+        <span id="loadingText" style="color: var(--text-secondary); font-size: 1.1rem;">Processing Transaction...</span>
+    </div>
 </body>
 
 </html>
