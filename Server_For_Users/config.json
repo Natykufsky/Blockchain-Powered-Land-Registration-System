@@ -1,7 +1,11 @@
 {
     "Ganache_Url": "http://127.0.0.1:7545",
     "NETWORK_CHAIN_ID": 5777,
-    "Mongo_Db_Url": "mongodb://localhost:27017",
+    "MySQL_Host": "localhost",
+    "MySQL_Port": 3306,
+    "MySQL_User": "kmoses",
+    "MySQL_Password": "@Kmoses??123",
     "Secret_Key": "CitizenPortal$456"
 }
+
  

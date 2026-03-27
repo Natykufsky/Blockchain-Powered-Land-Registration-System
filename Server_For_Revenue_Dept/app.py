@@ -1,93 +1,75 @@
-from flask import Flask, jsonify,render_template,request,Response,redirect, session
-from pymongo import MongoClient
-import gridfs
+from flask import Flask, jsonify, render_template, request, Response, redirect, session
+import mysql.connector
+from mysql.connector import pooling
 from web3 import Web3, HTTPProvider
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-import json 
+import json
+import mimetypes
 
-# our own module
 from utility.mapRevenueDeptToEmployee import mapRevenueDeptIdToEmployee
 
-# Get configuration info
 
+# ── Config ────────────────────────────────────────────────────────────────────
 basedir = os.path.dirname(os.path.abspath(__file__))
 
-with open(os.path.join(basedir, "config.json"),"r") as f:
+with open(os.path.join(basedir, "config.json"), "r") as f:
     config = json.load(f)
 
-
-
-# admin address
-# adminAddress = config["Address_Used_To_Deploy_Contract"]
-adminAddress = config["Admin_Address"]
-
-# admin password
+adminAddress  = config["Admin_Address"]
 adminPassword = config["Admin_Password"]
-
-
-
-# blockchain Network ID
 NETWORK_CHAIN_ID = str(config["NETWORK_CHAIN_ID"])
 
 
+# ── MySQL connection pool ─────────────────────────────────────────────────────
+db_pool = pooling.MySQLConnectionPool(
+    pool_name="revenue_pool",
+    pool_size=5,
+    host=config["MySQL_Host"],
+    port=config.get("MySQL_Port", 3306),
+    user=config["MySQL_User"],
+    password=config["MySQL_Password"],
+    database="Revenue_Dept"
+)
 
-# connect to mong db
-client = MongoClient(config["Mongo_Db_Url"])
-
-# connect to database
-LandRegistryDB = client.LandRegistry
-
-# connect to file System
-fs = gridfs.GridFS(LandRegistryDB)
-
-# property collection
-propertyDocsTable = LandRegistryDB.Property_Docs
-
-# employee collection
-employeesTable = client.Revenue_Dept.Employees
+def get_db():
+    """Return a connection from the pool."""
+    return db_pool.get_connection()
 
 
-# flask app
+# ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
-
-
-# flask secret key
 app.secret_key = config["Secret_Key"]
 
 
-
+# ── Routes ────────────────────────────────────────────────────────────────────
 @app.route('/')
 def index():
-    # Render the 'index.html' template with the variables passed in
     return render_template('index.html')
-
 
 
 @app.route("/login", methods=['POST'])
 def login():
+    employee_id = request.form['employeeId']
+    password    = request.form['password']
 
-    if request.method == 'POST':
-        employeeId = request.form['employeeId']
-        password = request.form['password']
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM employees WHERE employee_id = %s", (employee_id,)
+    )
+    user = cursor.fetchone()
+    cursor.close(); conn.close()
 
-        
-        user = employeesTable.find_one({"employeeId":employeeId})
-
-        
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = str(user['_id'])
-            return jsonify({'status':1,
-                            "msg":'Login Success',
-                            "revenueDepartmentId":user['revenueDeptId'],
-                            "empName":user['fname']
-                            })
-        else:
-            return jsonify({'status':0,"msg":'Invalid Wallet or password'})
-
-    else:
-        return jsonify({'status':0,"msg":'GET Not allowed'})
-
+    if user and check_password_hash(user['password_hash'], password):
+        session['user_id'] = user['id']
+        return jsonify({
+            'status': 1,
+            'msg': 'Login Success',
+            'revenueDepartmentId': user['revenue_dept_id'],
+            'empName': user['fname']
+        })
+    return jsonify({'status': 0, 'msg': 'Invalid Wallet or password'})
 
 
 @app.route('/logout')
@@ -100,73 +82,90 @@ def logout():
 def dashboard():
     if 'user_id' in session:
         return render_template('dashboard.html')
-    else:
-        return redirect('/')
+    return redirect('/')
 
 
 @app.route('/propertiesDocs/pdf/<propertyId>')
 def get_pdf(propertyId):
-  try:
     try:
-        propertyDetails = propertyDocsTable.find({"Property_Id":"%s"%(propertyId)})[0]
-        
-    except IndexError as e:
-        return jsonify({"status":0,"Reason":"No Property Matched With Id"})
+        conn = mysql.connector.connect(
+            host=config["MySQL_Host"],
+            port=config.get("MySQL_Port", 3306),
+            user=config["MySQL_User"],
+            password=config["MySQL_Password"],
+            database="LandRegistry"
+        )
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT filename, mime_type, file_data FROM property_docs WHERE property_id = %s",
+            (propertyId,)
+        )
+        row = cursor.fetchone()
+        cursor.close(); conn.close()
 
-    fileName = "%s_%s.pdf"%(propertyDetails['Owner'],propertyDetails['Property_Id'])
-    
-    file = fs.get(propertyDetails[fileName])
+        if not row:
+            return jsonify({"status": 0, "Reason": "No Property Matched With Id"})
 
-    response = Response(file, content_type='application/pdf')
-    response.headers['Content-Disposition'] = f'inline; filename="{file.filename}"'
-    
-    return response
+        content_type = row['mime_type'] or 'application/octet-stream'
+        response = Response(row['file_data'], content_type=content_type)
+        response.headers['Content-Disposition'] = f'inline; filename="{row["filename"]}"'
+        return response
 
-  except Exception as e:
-    return jsonify({"status":0,"Reason":str(e)})
-
+    except Exception as e:
+        return jsonify({"status": 0, "Reason": str(e)})
 
 
-
+@app.route('/propertiesDocs/meta/<propertyId>')
+def get_doc_meta(propertyId):
+    """Returns JSON with mime_type so frontend can render the right viewer."""
+    try:
+        conn = mysql.connector.connect(
+            host=config["MySQL_Host"],
+            port=config.get("MySQL_Port", 3306),
+            user=config["MySQL_User"],
+            password=config["MySQL_Password"],
+            database="LandRegistry"
+        )
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT mime_type, filename FROM property_docs WHERE property_id = %s",
+            (propertyId,)
+        )
+        row = cursor.fetchone()
+        cursor.close(); conn.close()
+        if not row:
+            return jsonify({"status": 0, "Reason": "Not found"}), 404
+        return jsonify({"status": 1, "mime_type": row['mime_type'], "filename": row['filename']})
+    except Exception as e:
+        return jsonify({"status": 0, "Reason": str(e)}), 500
 
 
 @app.route('/fetchContractDetails')
 def fetchContractDetails():
-    usersContract = json.loads(
-            open(
-                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "Users.json")
-                    ).read()
-        )
-    
-    landRegistryContract = json.loads(
-            open(
-                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "LandRegistry.json")
-                    ).read()
-        )
+    contracts_path = os.path.join(basedir, "..", "Smart_contracts", "build", "contracts")
 
-    transferOwnerShip = json.loads(
-            open(
-                    os.path.join(basedir, "..", "Smart_contracts", "build", "contracts", "TransferOwnerShip.json")
-                    ).read()
-        )
+    def load(name):
+        with open(os.path.join(contracts_path, name)) as f:
+            return json.load(f)
 
-    response = {}
+    users_contract    = load("Users.json")
+    land_contract     = load("LandRegistry.json")
+    transfer_contract = load("TransferOwnerShip.json")
 
-    response["Users"] = {}
-    response["Users"]["address"] = usersContract["networks"][NETWORK_CHAIN_ID]["address"]
-    response["Users"]["abi"] = usersContract["abi"]
-
-    response["LandRegistry"]  = {}
-    response["LandRegistry"]["address"] = landRegistryContract["networks"][NETWORK_CHAIN_ID]["address"]
-    response["LandRegistry"]["abi"] = landRegistryContract["abi"]
-
-    response["TransferOwnership"]  = {}
-    response["TransferOwnership"]["address"] = transferOwnerShip["networks"][NETWORK_CHAIN_ID]["address"]
-    response["TransferOwnership"]["abi"] = transferOwnerShip["abi"]
-
-
-    return response
-
+    return {
+        "Users": {
+            "address": users_contract["networks"][NETWORK_CHAIN_ID]["address"],
+            "abi":     users_contract["abi"]
+        },
+        "LandRegistry": {
+            "address": land_contract["networks"][NETWORK_CHAIN_ID]["address"],
+            "abi":     land_contract["abi"]
+        },
+        "TransferOwnership": {
+            "address": transfer_contract["networks"][NETWORK_CHAIN_ID]["address"],
+            "abi":     transfer_contract["abi"]
+        }
+    }
 
 
 @app.route('/admin')
@@ -174,148 +173,109 @@ def adminIndexPage():
     return render_template('admin.html')
 
 
-
-
-
 @app.route("/adminLogin", methods=['POST'])
 def adminLogin():
+    admin_address = request.form['adminAddress']
+    password      = request.form['password']
 
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM employees WHERE admin_address = %s", (admin_address,)
+    )
+    admin = cursor.fetchone()
+    cursor.close(); conn.close()
 
-
-    if request.method == 'POST':
-        adminAddress = request.form['adminAddress']
-        password = request.form['password']
-
-        admin = employeesTable.find_one({'adminAddress': adminAddress})
-
-
-        if admin and check_password_hash(admin['password'], password):
-            session['user_id'] = str(admin['_id'])
-            return jsonify({'status':1,
-                            "msg":'Admin Login Success'
-                            })
-        else:
-            return jsonify({'status':0,"msg":'Invalid Wallet or password'})
-
-    else:
-        return jsonify({'status':0,"msg":'GET Not allowed'})
-
-
-
-
+    if admin and check_password_hash(admin['password_hash'], password):
+        session['user_id'] = admin['id']
+        return jsonify({'status': 1, 'msg': 'Admin Login Success'})
+    return jsonify({'status': 0, 'msg': 'Invalid Wallet or password'})
 
 
 @app.route("/addEmployee", methods=['POST'])
 def addEmployee():
-    
     if 'user_id' not in session:
-        return jsonify({'status':0,"msg":'Login Required'})
-   
-    if request.method == 'POST':
-        employeeId = request.form['empAddress']
-        password = request.form['password']
-        fname = request.form['fname']
-        lname = request.form['lname']
-        revenueDeptId = request.form['revenueDeptId']
+        return jsonify({'status': 0, 'msg': 'Login Required'})
+
+    employee_id     = request.form['empAddress']
+    password        = request.form['password']
+    fname           = request.form['fname']
+    lname           = request.form['lname']
+    revenue_dept_id = request.form['revenueDeptId']
+
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    # Duplicate check
+    cursor.execute(
+        "SELECT id FROM employees WHERE employee_id = %s", (employee_id,)
+    )
+    if cursor.fetchone():
+        cursor.close(); conn.close()
+        return jsonify({
+            'status': 0,
+            'msg': f"Employee with address '{employee_id}' already registered."
+        }), 409
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO employees (employee_id, password_hash, fname, lname, revenue_dept_id)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (employee_id, generate_password_hash(password), fname, lname, revenue_dept_id)
+        )
+        conn.commit()
+        print(f"Employee {fname} {lname} added to database successfully")
+    except Exception as e:
+        cursor.close(); conn.close()
+        return jsonify({'status': 0, 'msg': f"Database error: {e}"})
+
+    cursor.close(); conn.close()
+
+    # Blockchain transaction
+    try:
+        res = mapRevenueDeptIdToEmployee(revenue_dept_id, employee_id)
+        if res:
+            return jsonify({'status': 1, 'msg': f"Employee '{fname}' Added Successfully"})
+        return jsonify({'status': 0, 'msg': "Employee added to database but blockchain transaction failed"})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'status': 0, 'msg': f"Employee added but blockchain error: {e}"})
 
 
-        emp = {
-            "employeeId":employeeId,
-            "password":generate_password_hash(password),
-            "fname":fname,
-            "lname":lname,
-            "revenueDeptId":revenueDeptId
-        }
+# ── Startup: ensure admin account exists ─────────────────────────────────────
+def ensure_admin():
+    if not adminAddress or not adminPassword:
+        print("Admin Address Details Not found in Configuration file")
+        return
 
-        try:
-            # Check if employee already exists in database
-            existing_emp = employeesTable.find_one({"employeeId": employeeId})
-            if existing_emp:
-                return jsonify({
-                    'status': 0,
-                    "msg": f"Employee with address '{employeeId}' already registered."
-                }), 409
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT id FROM employees WHERE admin_address = %s", (adminAddress,)
+    )
+    admin = cursor.fetchone()
 
-            # add to mongo db database
-            result = employeesTable.insert_one(emp)
-
-            print(f"Employee {fname} {lname} added to database successfully")
-            
-            # make transaction to map revenue dept id to employee address
-            try:
-                res = mapRevenueDeptIdToEmployee(revenueDeptId, employeeId)
-                
-                if res:
-                    return jsonify({
-                                'status':1,
-                                "msg":f"Employee '{fname}' Added Successfully"
-                                })
-                else:
-                    return jsonify({
-                                'status':0,
-                                "msg":f"Employee added to database but blockchain transaction failed"
-                                })
-            except Exception as blockchain_error:
-                print(f"Blockchain transaction error: {str(blockchain_error)}")
-                import traceback
-                traceback.print_exc()
-                return jsonify({
-                            'status':0,
-                            "msg": f"Employee added to database but blockchain error: {str(blockchain_error)}"
-                         })
-
-        except Exception as e:
-            print(f"Database insertion error: {str(e)}")
-            return jsonify({
-                            'status':0,
-                            "msg": f"Database error: {str(e)}"
-                         })
-
+    if admin is None:
+        print("\nAdding Admin Details To Database")
+        cursor.execute(
+            "INSERT INTO employees (admin_address, password_hash) VALUES (%s, %s)",
+            (adminAddress, generate_password_hash(adminPassword))
+        )
+        conn.commit()
+        print("Admin added successfully")
     else:
-        return jsonify({'status':0,"msg":'GET Not allowed'})
+        print("\nUpdating Admin Details in Database to match Config")
+        cursor.execute(
+            "UPDATE employees SET admin_address = %s, password_hash = %s WHERE admin_address = %s",
+            (adminAddress, generate_password_hash(adminPassword), adminAddress)
+        )
+        conn.commit()
 
-
-
-
+    cursor.close(); conn.close()
 
 
 if __name__ == '__main__':
-
-    # Check Admin Account is Created or Not
-    if((adminAddress is not None) and (adminPassword is not None)):
-
-        admin = employeesTable.find_one({'adminAddress': adminAddress})
-
-        # admin account not added to employees table
-        if admin is None:
-            print("\nAdding Admin Details To Database")
-
-            admin = {
-                "adminAddress":adminAddress,
-                "password":generate_password_hash(adminPassword)
-            }
-
-
-            adminId = employeesTable.insert_one(admin).inserted_id
-
-            if adminId is not None:
-                print("Added Successfully", admin)
-            else:
-                print("Failed to add Details")
-                exit(0)
-        else:
-            # Update password to match config (in case it changed or DB is stale)
-            print("\nUpdating Admin Details in Database to match Config")
-            employeesTable.update_one(
-                {'adminAddress': adminAddress},
-                {'$set': {
-                    'adminAddress': adminAddress,
-                    'password': generate_password_hash(adminPassword)
-                }}
-            )
-       
-        # Start Server
-        app.run(debug=True,port=5001)
-
-    else:
-        print("Admin Address Details Not found in Configuration file")
+    ensure_admin()
+    app.run(debug=True, port=5001)

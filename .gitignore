@@ -66,3 +66,7 @@ coverage.xml
 
 # Misc
 bash.exe.stackdump
+nul
+
+# MongoDB runtime data (binary files, not for version control)
+mongodb/data/

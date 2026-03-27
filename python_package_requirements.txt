@@ -1,4 +1,4 @@
-Flask==2.2.3 
-pymongo==4.3.3 
-
+Flask==2.2.3
+mysql-connector-python==8.3.0
 web3==5.31.3
+werkzeug==2.2.3

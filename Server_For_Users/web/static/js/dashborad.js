@@ -254,7 +254,7 @@ async function fetchPropertiesOfOwner() {
       tableRow += "<td class='px-6 py-4 text-sm'>" + properties[i]["revenueDepartmentId"] + "</td>";
       tableRow += "<td class='px-6 py-4 text-sm'>" + properties[i]["surveyNumber"] + "</td>";
       tableRow += "<td class='px-6 py-4 text-sm'>" + properties[i]["area"] + "</td>";
-      tableRow += "<td class='px-6 py-4 text-sm'> <button class='bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/30 transition-all text-xs font-semibold' onclick=showPdf(" + properties[i]["propertyId"] + ")> VIEW PDF </button></td>";
+      tableRow += "<td class='px-6 py-4 text-sm'> <button class='bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-lg border border-indigo-500/30 transition-all text-xs font-semibold' onclick=showDocument(" + properties[i]["propertyId"] + ")> VIEW DOC </button></td>";
 
       tableRow += "<td class='px-6 py-4 text-sm'>" + handleStateOfProperty(properties[i]) + "</td>";
 
@@ -406,15 +406,43 @@ function refreshProperties() {
   setTimeout(() => alertUser("", "", "none"), 2000);
 }
 
-// function to show Registered pdfs
-function showPdf(propertyId) {
-  const frame = document.getElementById('pdf-frame');
-  frame.src = `/propertiesDocs/pdf/${propertyId}`;
+// Show property document — handles both PDF and image types
+async function showDocument(propertyId) {
+  const popup  = document.querySelector('.pdf-popup');
+  const viewer = document.getElementById('doc-viewer');
 
-  const popup = document.querySelector('.pdf-popup');
+  // Show popup with loading indicator while fetching meta
+  viewer.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:2rem">Loading document...</div>';
   popup.classList.remove('hidden');
   popup.classList.add('flex');
+
+  try {
+    const meta = await fetch(`/propertiesDocs/meta/${propertyId}`).then(r => r.json());
+    const url  = `/propertiesDocs/pdf/${propertyId}`;
+
+    if (meta.status !== 1) {
+      viewer.innerHTML = `<div style="color:#f87171;text-align:center;padding:2rem">Document not found.</div>`;
+      return;
+    }
+
+    const mime = meta.mime_type || 'application/pdf';
+
+    if (mime.startsWith('image/')) {
+      viewer.innerHTML = `
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1rem;background:#0f172a">
+          <img src="${url}" alt="Property Document"
+               style="max-width:100%;max-height:100%;object-fit:contain;border-radius:0.75rem;box-shadow:0 4px 32px rgba(0,0,0,0.5)">
+        </div>`;
+    } else {
+      viewer.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;"></iframe>`;
+    }
+  } catch (e) {
+    viewer.innerHTML = `<div style="color:#f87171;text-align:center;padding:2rem">Failed to load document.</div>`;
+  }
 }
+
+// Keep old name as alias for backward compat
+function showPdf(propertyId) { showDocument(propertyId); }
 
 function closePopup() {
   const popup = document.querySelector('.pdf-popup');
